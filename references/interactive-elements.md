@@ -72,20 +72,20 @@ The most important teaching element. Shows real code from the project on the lef
   font-size: var(--text-sm);
   line-height: 1.7;
   position: relative;
-  overflow-x: hidden;  /* NO horizontal scrollbar — ever */
+  overflow-x: auto;  /* contain long lines without changing source indentation */
 }
 .translation-code pre,
 .translation-code code {
-  white-space: pre-wrap;       /* wrap long lines instead of scrolling */
-  word-break: break-word;      /* break mid-word if needed */
-  overflow-x: hidden;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 .translation-english {
   background: var(--color-surface-warm);
   padding: var(--space-6);
   font-size: var(--text-sm);
   line-height: 1.7;
-  border-left: 3px solid var(--color-accent);
+  border-left: 1px solid var(--color-border);
 }
 .translation-label {
   position: absolute;
@@ -94,7 +94,7 @@ The most important teaching element. Shows real code from the project on the lef
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  opacity: 0.5;
+  color: #A6ADC8;
 }
 .translation-english .translation-label {
   color: var(--color-text-muted);
@@ -102,7 +102,7 @@ The most important teaching element. Shows real code from the project on the lef
 /* Responsive: stack vertically on mobile */
 @media (max-width: 768px) {
   .translation-block { grid-template-columns: 1fr; }
-  .translation-english { border-left: none; border-top: 3px solid var(--color-accent); }
+  .translation-english { border-left: none; border-top: 1px solid var(--color-border); }
 }
 ```
 
@@ -117,7 +117,7 @@ The most important teaching element. Shows real code from the project on the lef
 
 For testing understanding with instant feedback. Each question has options, one correct answer, and per-question explanations.
 
-**Wiring:** `main.js` exposes `window.selectOption(btn)`, `window.checkQuiz(containerId)`, and `window.resetQuiz(containerId)`. Call them via `onclick`. Per-question explanations go in `data-explanation-right` and `data-explanation-wrong` on the `.quiz-question-block`.
+**Wiring:** `main.js` auto-initializes the options and the `.quiz-check-btn` / `.quiz-reset-btn` controls inside every uniquely identified `.quiz-container`. Per-question explanations go in `data-explanation-right` and `data-explanation-wrong` on the `.quiz-question-block`.
 
 **HTML:**
 ```html
@@ -128,24 +128,24 @@ For testing understanding with instant feedback. Each question has options, one 
        data-explanation-wrong="Not quite. Think about where Y lives in the codebase...">
     <h3 class="quiz-question">Question text here?</h3>
     <div class="quiz-options">
-      <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
-        <div class="quiz-option-radio"></div>
+      <button class="quiz-option" type="button" data-value="option-a">
+        <span class="quiz-option-radio" aria-hidden="true"></span>
         <span>Answer A</span>
       </button>
-      <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
-        <div class="quiz-option-radio"></div>
+      <button class="quiz-option" type="button" data-value="option-b">
+        <span class="quiz-option-radio" aria-hidden="true"></span>
         <span>Answer B (correct)</span>
       </button>
-      <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
-        <div class="quiz-option-radio"></div>
+      <button class="quiz-option" type="button" data-value="option-c">
+        <span class="quiz-option-radio" aria-hidden="true"></span>
         <span>Answer C</span>
       </button>
     </div>
     <div class="quiz-feedback"></div>
   </div>
 
-  <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
-  <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+  <button class="quiz-check-btn" type="button">Check answers</button>
+  <button class="quiz-reset-btn" type="button">Try again</button>
 </div>
 ```
 
@@ -167,7 +167,7 @@ For testing understanding with instant feedback. Each question has options, one 
 .quiz-option-radio {
   width: 18px; height: 18px; border-radius: 50%;
   border: 2px solid var(--color-border);
-  transition: all var(--duration-fast);
+  transition: border-color var(--duration-fast), background var(--duration-fast), box-shadow var(--duration-fast);
 }
 .quiz-option.selected .quiz-option-radio {
   border-color: var(--color-accent);
@@ -187,96 +187,30 @@ For testing understanding with instant feedback. Each question has options, one 
 
 ## Drag-and-Drop Matching
 
-For matching concepts to descriptions. Supports both mouse (HTML5 Drag API) and touch.
+For matching concepts to descriptions. Supports mouse drag, tap-to-place, and keyboard select/place using the same controls.
 
 **HTML:**
 ```html
-<div class="dnd-container">
+<div class="dnd-container" id="dnd-module2">
   <div class="dnd-chips">
-    <div class="dnd-chip" draggable="true" data-answer="actor-a">Actor A</div>
-    <div class="dnd-chip" draggable="true" data-answer="actor-b">Actor B</div>
-    <div class="dnd-chip" draggable="true" data-answer="actor-c">Actor C</div>
+    <button class="dnd-chip" type="button" draggable="true" data-answer="actor-a">Actor A</button>
+    <button class="dnd-chip" type="button" draggable="true" data-answer="actor-b">Actor B</button>
+    <button class="dnd-chip" type="button" draggable="true" data-answer="actor-c">Actor C</button>
   </div>
   <div class="dnd-zones">
     <div class="dnd-zone" data-correct="actor-a">
       <p class="dnd-zone-label">Description for Actor A</p>
-      <div class="dnd-zone-target">Drop here</div>
+      <button class="dnd-zone-target" type="button">Place an item here</button>
     </div>
     <!-- more zones -->
   </div>
-  <button onclick="checkDnD()">Check Matches</button>
-  <button onclick="resetDnD()">Reset</button>
+  <button class="btn btn-primary dnd-check-btn" type="button">Check matches</button>
+  <button class="btn dnd-reset-btn" type="button">Reset</button>
+  <p class="dnd-feedback" role="status" aria-live="polite">Select an item to begin.</p>
 </div>
 ```
 
-**JS (mouse + touch):**
-```javascript
-// MOUSE: HTML5 Drag API
-chips.forEach(chip => {
-  chip.addEventListener('dragstart', (e) => {
-    e.dataTransfer.setData('text/plain', chip.dataset.answer);
-    chip.classList.add('dragging');
-  });
-  chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-});
-
-zones.forEach(zone => {
-  const target = zone.querySelector('.dnd-zone-target');
-  target.addEventListener('dragover', (e) => { e.preventDefault(); target.classList.add('drag-over'); });
-  target.addEventListener('dragleave', () => target.classList.remove('drag-over'));
-  target.addEventListener('drop', (e) => {
-    e.preventDefault();
-    target.classList.remove('drag-over');
-    const answer = e.dataTransfer.getData('text/plain');
-    const chip = document.querySelector(`[data-answer="${answer}"]`);
-    target.textContent = chip.textContent;
-    target.dataset.placed = answer;
-    chip.classList.add('placed');
-  });
-});
-
-// TOUCH: Custom implementation (HTML5 drag doesn't work on mobile)
-chips.forEach(chip => {
-  chip.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const clone = chip.cloneNode(true);
-    clone.classList.add('touch-ghost');
-    clone.style.cssText = `position:fixed; z-index:1000; pointer-events:none;
-      left:${touch.clientX - 40}px; top:${touch.clientY - 20}px;`;
-    document.body.appendChild(clone);
-    chip._ghost = clone;
-    chip._answer = chip.dataset.answer;
-  }, { passive: false });
-
-  chip.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    if (chip._ghost) {
-      chip._ghost.style.left = (touch.clientX - 40) + 'px';
-      chip._ghost.style.top = (touch.clientY - 20) + 'px';
-    }
-    // Highlight zone under finger
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    zones.forEach(z => z.querySelector('.dnd-zone-target').classList.remove('drag-over'));
-    if (el && el.closest('.dnd-zone-target')) {
-      el.closest('.dnd-zone-target').classList.add('drag-over');
-    }
-  }, { passive: false });
-
-  chip.addEventListener('touchend', (e) => {
-    if (chip._ghost) { chip._ghost.remove(); chip._ghost = null; }
-    const touch = e.changedTouches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (el && el.closest('.dnd-zone-target')) {
-      const target = el.closest('.dnd-zone-target');
-      target.textContent = chip.textContent;
-      target.dataset.placed = chip._answer;
-      chip.classList.add('placed');
-    }
-  });
-});
-```
+`main.js` owns all drag, selection, replacement, checking, and reset behavior. Do not add custom touch handlers; tap-to-place is the reliable mobile path.
 
 ---
 
@@ -290,7 +224,7 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
 ```html
 <div class="chat-window" id="chat-module2">
   <div class="chat-messages">
-    <div class="chat-message" data-msg="0" data-sender="actor-a" style="display:none">
+    <div class="chat-message" data-msg="0" data-sender="actor-a">
       <div class="chat-avatar" style="background: var(--color-actor-1)">A</div>
       <div class="chat-bubble">
         <span class="chat-sender" style="color: var(--color-actor-1)">Actor A</span>
@@ -300,8 +234,8 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
     <!-- more messages... -->
   </div>
 
-  <div class="chat-typing" id="chat-typing" style="display:none">
-    <div class="chat-avatar" id="typing-avatar">?</div>
+  <div class="chat-typing" hidden>
+    <div class="chat-avatar" id="chat-module2-typing-avatar">A</div>
     <div class="chat-typing-dots">
       <span class="typing-dot"></span>
       <span class="typing-dot"></span>
@@ -310,9 +244,9 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
   </div>
 
   <div class="chat-controls">
-    <button class="btn chat-next-btn">Next Message</button>
-    <button class="btn chat-all-btn">Play All</button>
-    <button class="btn chat-reset-btn">Replay</button>
+    <button class="btn chat-next-btn" type="button">Next message</button>
+    <button class="btn chat-all-btn" type="button" aria-pressed="false">Play all</button>
+    <button class="btn chat-reset-btn" type="button">Replay</button>
     <span class="chat-progress"></span>
   </div>
 </div>
@@ -341,37 +275,37 @@ Step-by-step visualization of data moving between components. User clicks "Next 
 
 **Wiring:** `main.js` auto-initializes every `.flow-animation` on page load. Pass steps as JSON in `data-steps`. Each step object: `{ highlight: "flow-actor-id", label: "description", packet: true, from: "actor-id-suffix", to: "actor-id-suffix" }`. Actor element IDs must be `flow-actor-1`, `flow-actor-2`, etc. Control buttons need classes `.flow-next-btn` and `.flow-reset-btn`.
 
-> **⚠️ Single quotes in step labels will break parsing.** The `data-steps` attribute is delimited by single quotes (`data-steps='[...]'`), so any single quote inside a label (e.g. `"the user's request"`) will terminate the attribute early and cause `JSON.parse` to fail silently — the entire animation will stop working. Either avoid apostrophes in labels, replace them with `&apos;`, or rewrite the attribute using double-quote delimiters with escaped inner quotes (`data-steps="[{\"label\":\"...\"}]"`).
+> **Attribute safety:** Because the example uses a single-quoted `data-steps` attribute, encode apostrophes inside labels as `&apos;`. If malformed JSON reaches the browser, the engine now shows a readable recovery message while preserving the surrounding lesson.
 
 **HTML:**
 ```html
 <div class="flow-animation" data-steps='[
-  {"highlight":"flow-actor-1","label":"User clicks the button"},
-  {"highlight":"flow-actor-1","label":"Frontend sends request","packet":true,"from":"actor-1","to":"actor-2"},
-  {"highlight":"flow-actor-2","label":"Backend calls the database","packet":true,"from":"actor-2","to":"actor-3"}
+  {"highlight":"flow-m3-actor-1","label":"User clicks the button"},
+  {"highlight":"flow-m3-actor-1","label":"Frontend sends request","packet":true,"from":"m3-actor-1","to":"m3-actor-2"},
+  {"highlight":"flow-m3-actor-2","label":"Backend calls the database","packet":true,"from":"m3-actor-2","to":"m3-actor-3"}
 ]'>
   <div class="flow-actors">
-    <div class="flow-actor" id="flow-actor-1">
+    <div class="flow-actor" id="flow-m3-actor-1">
       <div class="flow-actor-icon">A</div>
       <span>Actor 1</span>
     </div>
-    <div class="flow-actor" id="flow-actor-2">
+    <div class="flow-actor" id="flow-m3-actor-2">
       <div class="flow-actor-icon">B</div>
       <span>Actor 2</span>
     </div>
-    <div class="flow-actor" id="flow-actor-3">
+    <div class="flow-actor" id="flow-m3-actor-3">
       <div class="flow-actor-icon">C</div>
       <span>Actor 3</span>
     </div>
   </div>
 
-  <div class="flow-packet" id="flow-packet"></div>
+  <div class="flow-packet" aria-hidden="true"></div>
 
-  <div class="flow-step-label" id="flow-label">Click "Next Step" to begin</div>
+  <div class="flow-step-label">Choose Next step to begin</div>
 
   <div class="flow-controls">
-    <button class="btn flow-next-btn">Next Step</button>
-    <button class="btn flow-reset-btn">Restart</button>
+    <button class="btn flow-next-btn" type="button">Next step</button>
+    <button class="btn flow-reset-btn" type="button">Restart</button>
     <span class="flow-progress"></span>
   </div>
 </div>
@@ -380,9 +314,10 @@ Step-by-step visualization of data moving between components. User clicks "Next 
 **CSS for active actor glow:**
 ```css
 .flow-actor.active {
-  box-shadow: 0 0 0 3px var(--color-accent), 0 0 20px rgba(217, 79, 48, 0.2);
+  box-shadow: 0 0 0 3px var(--color-accent-light),
+              0 8px 24px color-mix(in srgb, var(--color-accent) 20%, transparent);
   transform: scale(1.05);
-  transition: all var(--duration-normal) var(--ease-out);
+  transition: transform var(--duration-normal) var(--ease-out);
 }
 ```
 
@@ -397,18 +332,19 @@ Full-system diagram where hovering/clicking a component shows a description tool
 <div class="arch-diagram">
   <div class="arch-zone arch-zone-browser">
     <h4 class="arch-zone-label">Browser</h4>
-    <div class="arch-component" data-desc="Injects UI into the web page, reads DOM, captures user actions"
-         onclick="showArchDesc(this)">
-      <div class="arch-icon">📄</div>
+    <button class="arch-component" type="button" data-desc="Injects UI into the web page, reads DOM, captures user actions">
+      <span class="arch-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 13h6M9 17h6"/></svg>
+      </span>
       <span>Component A</span>
-    </div>
+    </button>
     <!-- more components -->
   </div>
   <div class="arch-zone arch-zone-external">
     <h4 class="arch-zone-label">External Services</h4>
     <!-- API cards -->
   </div>
-  <div class="arch-description" id="arch-desc">Click any component to learn what it does</div>
+  <div class="arch-description">Choose a component to learn what it does.</div>
 </div>
 ```
 
@@ -422,18 +358,18 @@ Shows how different layers (e.g., HTML/CSS/JS, or data/logic/UI) build on each o
 ```html
 <div class="layer-demo">
   <div class="layer-tabs">
-    <button class="layer-tab active" onclick="showLayer('html')">HTML</button>
-    <button class="layer-tab" onclick="showLayer('css')">+ CSS</button>
-    <button class="layer-tab" onclick="showLayer('js')">+ JS</button>
+    <button class="layer-tab active" type="button" data-layer="html">HTML</button>
+    <button class="layer-tab" type="button" data-layer="css">+ CSS</button>
+    <button class="layer-tab" type="button" data-layer="js">+ JS</button>
   </div>
   <div class="layer-viewport">
-    <div class="layer" id="layer-html" style="display:block">
+    <div class="layer" id="layer-html">
       <!-- Raw unstyled version -->
     </div>
-    <div class="layer" id="layer-css" style="display:none">
+    <div class="layer" id="layer-css" hidden>
       <!-- Styled version -->
     </div>
-    <div class="layer" id="layer-js" style="display:none">
+    <div class="layer" id="layer-js" hidden>
       <!-- Interactive version -->
     </div>
   </div>
@@ -452,47 +388,32 @@ Show code with a deliberate bug. User clicks the buggy line. Reveal explains the
 <div class="bug-challenge">
   <h3>Find the bug in this code:</h3>
   <div class="bug-code">
-    <div class="bug-line" data-line="1" onclick="checkBugLine(this, false)">
+    <button class="bug-line" type="button" data-line="1" data-correct="false" data-hint="Not this line — look for where async timing changes the response.">
       <span class="line-num">1</span>
       <code>chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {</code>
-    </div>
-    <div class="bug-line" data-line="2" onclick="checkBugLine(this, false)">
+    </button>
+    <button class="bug-line" type="button" data-line="2" data-correct="false" data-hint="This condition is valid. Look at the asynchronous work instead.">
       <span class="line-num">2</span>
       <code>  if (msg.action === 'fetchData') {</code>
-    </div>
-    <div class="bug-line bug-target" data-line="3" onclick="checkBugLine(this, true)">
+    </button>
+    <button class="bug-line bug-target" type="button" data-line="3" data-correct="true" data-explanation="The asynchronous response needs the message channel to remain open. Add return true at the end of the listener.">
       <span class="line-num">3</span>
       <code>    fetch(url).then(r => r.json()).then(data => sendResponse(data));</code>
-    </div>
-    <div class="bug-line" data-line="4" onclick="checkBugLine(this, false)">
+    </button>
+    <button class="bug-line" type="button" data-line="4" data-correct="false" data-hint="This brace only closes the condition. Look for the missing asynchronous return value.">
       <span class="line-num">4</span>
       <code>  }</code>
-    </div>
-    <div class="bug-line" data-line="5" onclick="checkBugLine(this, false)">
+    </button>
+    <button class="bug-line" type="button" data-line="5" data-correct="false" data-hint="This closes the listener. The missing behavior belongs immediately before it.">
       <span class="line-num">5</span>
       <code>});</code>
-    </div>
+    </button>
   </div>
   <div class="bug-feedback" id="bug-feedback"></div>
 </div>
 ```
 
-**JS:**
-```javascript
-window.checkBugLine = function(el, isCorrect) {
-  const feedback = el.closest('.bug-challenge').querySelector('.bug-feedback');
-  if (isCorrect) {
-    el.classList.add('correct');
-    feedback.innerHTML = '<strong>Found it!</strong> The listener uses an async operation (fetch) but doesn\'t return true. Chrome closes the message channel before the response can be sent. Fix: add <code>return true;</code> at the end.';
-    feedback.className = 'bug-feedback show success';
-  } else {
-    el.classList.add('incorrect');
-    feedback.innerHTML = 'Not this line — look for where the async timing might cause problems...';
-    feedback.className = 'bug-feedback show error';
-    setTimeout(() => { el.classList.remove('incorrect'); feedback.className = 'bug-feedback'; }, 2000);
-  }
-};
-```
+`main.js` reads `data-correct`, `data-hint`, and `data-explanation`, then handles focus, disabling, feedback, and recovery automatically.
 
 ---
 
@@ -520,7 +441,9 @@ Same HTML/CSS/JS pattern as Multiple-Choice Quizzes, but with longer scenario de
 
 ```html
 <div class="callout callout-accent">
-  <div class="callout-icon">💡</div>
+  <span class="callout-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M8.5 15.5A7 7 0 1 1 15.5 15.5c-.9.7-1.3 1.4-1.5 2.5h-4c-.2-1.1-.6-1.8-1.5-2.5Z"/></svg>
+  </span>
   <div class="callout-content">
     <strong class="callout-title">Key Insight</strong>
     <p>This pattern — splitting responsibilities into focused roles — is one of the most important ideas in software engineering. Engineers call it "separation of concerns."</p>
@@ -541,8 +464,10 @@ Grid of cards highlighting engineering patterns, tech stack components, or key c
 
 ```html
 <div class="pattern-cards">
-  <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
-    <div class="pattern-icon" style="background: var(--color-actor-1)">🔄</div>
+  <div class="pattern-card">
+    <span class="pattern-icon" style="background: var(--color-actor-1)" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6.2 9A7 7 0 0 1 18 7l2 5M18 15a7 7 0 0 1-12 2l-2-5"/></svg>
+    </span>
     <h4 class="pattern-title">Caching</h4>
     <p class="pattern-desc">Store results to avoid redundant work — like keeping leftovers instead of cooking a new meal every time.</p>
   </div>
@@ -640,7 +565,7 @@ The most important accessibility feature for non-technical learners. Any technic
 **HTML — mark up terms inline:**
 ```html
 <p>The extension uses a
-  <span class="term" data-definition="A service worker is a background script that runs independently of the web page — like a behind-the-scenes assistant that's always on, even when you're not looking at the page.">service worker</span>
+  <button class="term" type="button" data-definition="A service worker is a background script that runs independently of the web page — like a behind-the-scenes assistant that's always on, even when you're not looking at the page.">service worker</button>
   to handle API calls.
 </p>
 ```
@@ -648,9 +573,14 @@ The most important accessibility feature for non-technical learners. Any technic
 **CSS:**
 ```css
 .term {
+  display: inline;
+  padding: 0;
+  border: 0;
   border-bottom: 1.5px dashed var(--color-accent-muted);
+  background: transparent;
+  color: inherit;
+  font: inherit;
   cursor: pointer;    /* NOT cursor: help — pointer feels clickable and inviting */
-  position: relative;
 }
 .term:hover, .term.active {
   border-bottom-color: var(--color-accent);
@@ -827,12 +757,20 @@ Use instead of paragraphs listing "this folder does X, that folder does Y." Much
 .file-tree { font-family: var(--font-mono); font-size: var(--text-sm); }
 .ft-folder, .ft-file {
   padding: var(--space-2) var(--space-3);
-  border-left: 2px solid var(--color-border-light);
+  border-left: 1px solid var(--color-border-light);
   margin-left: var(--space-4);
 }
 .ft-folder > .ft-name { color: var(--color-accent); font-weight: 600; }
-.ft-folder > .ft-name::before { content: '📁 '; }
-.ft-file > .ft-name::before { content: '📄 '; }
+.ft-folder > .ft-name::before,
+.ft-file > .ft-name::before {
+  content: ''; display: inline-block; width: 10px; height: 10px;
+  margin-right: var(--space-2); vertical-align: 0;
+}
+.ft-folder > .ft-name::before {
+  border-radius: 2px; background: currentColor;
+  clip-path: polygon(0 18%, 36% 18%, 45% 0, 100% 0, 100% 100%, 0 100%);
+}
+.ft-file > .ft-name::before { border: 1px solid currentColor; border-radius: 1px; }
 .ft-desc {
   color: var(--color-text-secondary);
   font-family: var(--font-body);
@@ -851,21 +789,21 @@ For listing components, features, or concepts visually. Replaces bullet-point pa
 ```html
 <div class="icon-rows">
   <div class="icon-row">
-    <div class="icon-circle" style="background: var(--color-actor-1)">🖥️</div>
+    <div class="icon-circle" style="background: var(--color-actor-1)" aria-hidden="true">UI</div>
     <div>
       <strong>Frontend (Next.js)</strong>
       <p>What the user sees and interacts with</p>
     </div>
   </div>
   <div class="icon-row">
-    <div class="icon-circle" style="background: var(--color-actor-2)">⚡</div>
+    <div class="icon-circle" style="background: var(--color-actor-2)" aria-hidden="true">API</div>
     <div>
       <strong>API Routes</strong>
       <p>Backend logic that runs on the server</p>
     </div>
   </div>
   <div class="icon-row">
-    <div class="icon-circle" style="background: var(--color-actor-3)">🗄️</div>
+    <div class="icon-circle" style="background: var(--color-actor-3)" aria-hidden="true">DB</div>
     <div>
       <strong>Database (Supabase)</strong>
       <p>Where all the data is stored permanently</p>
@@ -887,7 +825,8 @@ For listing components, features, or concepts visually. Replaces bullet-point pa
 .icon-circle {
   width: 48px; height: 48px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.25rem; flex-shrink: 0;
+  color: var(--color-on-accent); font-family: var(--font-mono);
+  font-size: var(--text-xs); font-weight: 700; flex-shrink: 0;
 }
 ```
 
@@ -930,7 +869,7 @@ For sequences that would otherwise be a numbered paragraph list. Visual, scannab
   padding: var(--space-4) var(--space-5);
   background: var(--color-surface);
   border-radius: var(--radius-md);
-  border-left: 3px solid var(--color-accent);
+  border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
 }
 .step-num {

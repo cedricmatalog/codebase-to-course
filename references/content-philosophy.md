@@ -28,7 +28,7 @@ People's eyes glaze over text blocks. The course should feel closer to an infogr
 ### Code ↔ English Translations
 Every code snippet gets a side-by-side plain English translation. Left panel: real code from the project with syntax highlighting. Right panel: line-by-line plain English explaining what each line does. This is the single most valuable teaching tool for non-technical learners.
 
-**Critical: No horizontal scrollbars on code.** All code must use `white-space: pre-wrap` so it wraps instead of scrolling. This is a course for non-technical people, not an IDE — readability beats preserving indentation structure.
+**Preserve the real code shape.** Code blocks use their natural indentation and allow contained horizontal scrolling when a line is genuinely long. Choose naturally short 5–10-line excerpts, and never force mid-token wrapping that makes the snippet look different from the source file.
 
 **Critical: Use original code exactly as-is.** Never modify, simplify, or trim code snippets from the codebase. The learner should be able to open the real file and see the exact same code they learned from — that builds trust. Instead of editing code to make it shorter, *choose* naturally short, punchy snippets (5-10 lines) from the codebase that illustrate the concept well. Every codebase has compact, self-contained moments — find those rather than butchering longer functions.
 

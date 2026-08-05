@@ -30,3 +30,15 @@ Trying to write all modules in one pass causes later modules to be thin and rush
 
 ### Missing Interactive Elements
 A module with only text and code blocks, no interactivity. Every module needs at least one of: quiz, data flow animation, group chat, architecture diagram, drag-and-drop. These aren't decorations — they're how non-technical learners actually process information.
+
+### Anonymous Course Navigation
+Dots alone communicate progress but not destination. Every nav dot must carry a complete title, and the generated shell's current-module label and searchable Contents panel must remain intact.
+
+### Mouse-Only Learning
+Do not replace the reference buttons with clickable `<div>` or `<span>` elements. Matching must work through select/place as well as drag, glossary terms must be focusable buttons, and every dynamic result needs readable text rather than color alone.
+
+### Generic Openings and Flat Endings
+The opening must name a real user action and exact source path from this repository. The completion section must summarize three genuine capabilities and provide a repository-specific next prompt. Unchanged generic shell copy is a failed course.
+
+### Motion Without Control
+Use the shared engine's pause behavior and reduced-motion support. Never add an unpausable autoplay loop or a separate animation implementation inside a module.

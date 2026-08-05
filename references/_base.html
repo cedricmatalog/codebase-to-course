@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="COURSE_PROMISE">
   <title>COURSE_TITLE</title>
 
-  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <!-- Web fonts are a progressive enhancement; the course remains usable offline. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -13,13 +14,13 @@
   <link rel="stylesheet" href="styles.css">
 
   <!--
-    CUSTOMIZE PER COURSE — change only the three accent variables below.
+    CUSTOMIZE PER COURSE — change only the four accent variables below.
     Options:
-      vermillion  #D94F30 / #C4432A / #FDEEE9 / #E8836C  (default)
-      coral       #E06B56 / #C85A47 / #FDECEA / #E89585
-      teal        #2A7B9B / #1F6280 / #E4F2F7 / #5A9DB8
-      amber       #D4A843 / #BF9530 / #FDF5E0 / #E0C070
-      forest      #2D8B55 / #226B41 / #E8F5EE / #5AAD7A
+      vermillion  #B7442B / #91351F / #FDEEE9 / #C96C57  (default)
+      coral       #B94F3D / #963E30 / #FDECEA / #C97969
+      teal        #236C89 / #18536C / #E4F2F7 / #4D89A2
+      amber       #806116 / #624A0E / #FDF5E0 / #A98732
+      forest      #267247 / #1C5635 / #E8F5EE / #4A8C67
   -->
   <style>
     :root {
@@ -34,22 +35,105 @@
 </head>
 <body>
 
-  <nav class="nav" id="nav">
-    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-    <div class="nav-inner">
-      <span class="nav-title">COURSE_TITLE</span>
-      <div class="nav-dots" id="nav-dots" role="tablist">
-        <!--
-          One <button> per module. Replace MODULE_N_NAME with the actual module title.
+  <a class="skip-link" href="#main">Skip to course content</a>
 
-          <button class="nav-dot" data-target="module-1" data-tooltip="MODULE_1_NAME" role="tab" aria-label="Module 1: MODULE_1_NAME"></button>
-          <button class="nav-dot" data-target="module-2" data-tooltip="MODULE_2_NAME" role="tab" aria-label="Module 2: MODULE_2_NAME"></button>
-          ...
-        -->
-        NAV_DOTS
+  <nav class="nav" id="nav" aria-label="Course navigation">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-label="Course progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Course not started"></div>
+    <div class="nav-inner">
+      <a class="nav-title" href="#course-overview">PROJECT_NAME</a>
+      <p class="nav-status" id="nav-status" aria-live="polite">Course overview</p>
+      <div class="nav-controls">
+        <div class="nav-dots" id="nav-dots" aria-label="Course modules" hidden>
+          <!-- Insert one .nav-dot button per module. Each needs type="button",
+               a data-target matching its module id, a full data-tooltip title,
+               and an aria-label in the form "Module N: Title". -->
+          NAV_DOTS
+        </div>
+        <button class="nav-action" id="outline-toggle" type="button" aria-expanded="false" aria-controls="course-outline">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5.5h12M4 10h12M4 14.5h12"/></svg>
+          <span>Contents</span>
+        </button>
+        <button class="nav-action nav-help-button" id="help-toggle" type="button" aria-haspopup="dialog">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M8.2 7.7a2 2 0 0 1 3.8.9c0 1.5-2 1.7-2 3M10 14.5h.01"/></svg>
+          <span>Help</span>
+        </button>
       </div>
     </div>
+
+    <section class="course-outline" id="course-outline" aria-label="Course contents" hidden>
+      <div class="course-outline-heading">
+        <h2>Course contents</h2>
+        <button class="icon-button" id="outline-close" type="button" aria-label="Close course contents">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>
+        </button>
+      </div>
+      <label class="outline-search-label" for="outline-search">Find a module</label>
+      <input class="outline-search" id="outline-search" type="search" autocomplete="off" placeholder="Search module titles">
+      <ol class="outline-list" id="outline-list"></ol>
+      <p class="outline-empty" id="outline-empty" role="status" hidden>No matching module. Try another word.</p>
+    </section>
   </nav>
 
-  <main id="main">
+  <aside class="resume-banner" id="resume-banner" aria-labelledby="resume-title" hidden>
+    <div>
+      <strong id="resume-title">Continue where you left off?</strong>
+      <span id="resume-detail"></span>
+    </div>
+    <div class="resume-actions">
+      <button class="btn btn-primary" id="resume-course" type="button">Resume</button>
+      <button class="btn" id="dismiss-resume" type="button">Discard saved place and start over</button>
+    </div>
+  </aside>
+
+  <dialog class="course-help" id="course-help" aria-labelledby="course-help-title">
+    <form method="dialog" class="course-help-inner">
+      <div class="course-help-heading">
+        <h2 id="course-help-title">How to use this course</h2>
+        <button class="icon-button" value="close" aria-label="Close help">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>
+        </button>
+      </div>
+      <p>Read in order or jump through Contents. Technical terms with a dashed underline open plain-English definitions.</p>
+      <dl class="shortcut-list">
+        <div><dt><kbd>J</kbd> / <kbd>↓</kbd></dt><dd>Next module</dd></div>
+        <div><dt><kbd>K</kbd> / <kbd>↑</kbd></dt><dd>Previous module</dd></div>
+        <div><dt><kbd>Home</kbd></dt><dd>Course overview</dd></div>
+        <div><dt><kbd>End</kbd></dt><dd>Course recap</dd></div>
+        <div><dt><kbd>?</kbd></dt><dd>Open this help</dd></div>
+      </dl>
+      <p class="course-help-note">Every drag-and-drop exercise also works by selecting an item and then selecting its destination.</p>
+      <div class="course-help-actions">
+        <button class="btn" id="restart-course" type="button">Restart course and clear saved progress</button>
+        <button class="btn btn-primary" value="close">Return to course</button>
+      </div>
+    </form>
+  </dialog>
+
+  <header class="course-intro" id="course-overview">
+    <div class="course-intro-content">
+      <h1>COURSE_TITLE</h1>
+      <p class="course-promise">COURSE_PROMISE</p>
+
+      <div class="repo-trace" aria-label="Your first codebase trace">
+        <div class="repo-trace-node">
+          <span>1 · Start with a real action</span>
+          <strong>ENTRY_ACTION</strong>
+        </div>
+        <svg class="repo-trace-line" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M2 16h110"/><path d="m104 8 10 8-10 8"/>
+        </svg>
+        <div class="repo-trace-node repo-trace-file">
+          <span>2 · Instructions that define the course</span>
+          <code>ENTRY_FILE</code>
+        </div>
+      </div>
+
+      <a class="course-start" href="#module-1">
+        Start tracing
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
     <!-- modules/*.html content is assembled here by build.sh -->

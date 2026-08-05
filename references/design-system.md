@@ -1,6 +1,6 @@
 # Design System Reference
 
-Complete CSS design tokens for the course. Copy this entire `:root` block into the course HTML and adapt the accent color to suit the project's personality.
+Reference for the canonical system in `references/styles.css`. Copy `styles.css` verbatim into every course; use this document to understand the available tokens and patterns. Only the four accent variables are overridden in `_base.html`.
 
 ## Table of Contents
 1. [Color Palette](#color-palette)
@@ -24,42 +24,42 @@ Complete CSS design tokens for the course. Copy this entire `:root` block into t
   --color-bg-warm:        #F5F0E8;       /* slightly warmer for alternating modules */
   --color-bg-code:        #1E1E2E;       /* deep indigo-charcoal for code blocks */
   --color-text:           #2C2A28;       /* dark charcoal, easy on eyes */
-  --color-text-secondary: #6B6560;       /* warm gray for secondary text */
-  --color-text-muted:     #9E9790;       /* muted for timestamps, labels */
+  --color-text-secondary: #4D4945;       /* strong warm gray for secondary text */
+  --color-text-muted:     #625D58;       /* AA-safe muted text */
   --color-border:         #E5DFD6;       /* subtle warm border */
   --color-border-light:   #EEEBE5;       /* even lighter border */
   --color-surface:        #FFFFFF;       /* card surfaces */
   --color-surface-warm:   #FDF9F3;       /* warm card surface */
 
   /* --- ACCENT (adapt per project — pick ONE bold color) ---
-     Default: vermillion. Alternatives: coral (#E06B56), teal (#2A7B9B),
-     amber (#D4A843), forest (#2D8B55). Avoid purple gradients. */
-  --color-accent:         #D94F30;
-  --color-accent-hover:   #C4432A;
+     Default: vermillion. Choose a complete AA-safe palette from _base.html. */
+  --color-accent:         #B7442B;
+  --color-accent-hover:   #91351F;
   --color-accent-light:   #FDEEE9;
-  --color-accent-muted:   #E8836C;
+  --color-accent-muted:   #C96C57;
+  --color-on-accent:      #FFFFFF;
 
   /* --- SEMANTIC --- */
-  --color-success:        #2D8B55;
+  --color-success:        #216B40;
   --color-success-light:  #E8F5EE;
-  --color-error:          #C93B3B;
+  --color-error:          #A52D2D;
   --color-error-light:    #FDE8E8;
-  --color-info:           #2A7B9B;
+  --color-info:           #1F6079;
   --color-info-light:     #E4F2F7;
 
   /* --- ACTOR COLORS (assign to main components) ---
      Each major "character" in the codebase gets a distinct color
      for chat bubbles, diagrams, and highlights */
-  --color-actor-1:        #D94F30;       /* vermillion */
-  --color-actor-2:        #2A7B9B;       /* teal */
-  --color-actor-3:        #7B6DAA;       /* muted plum */
-  --color-actor-4:        #D4A843;       /* golden */
-  --color-actor-5:        #2D8B55;       /* forest */
+  --color-actor-1:        #B7442B;       /* vermillion */
+  --color-actor-2:        #216A84;       /* teal */
+  --color-actor-3:        #66558F;       /* muted plum */
+  --color-actor-4:        #806116;       /* dark gold */
+  --color-actor-5:        #267247;       /* forest */
 }
 ```
 
 **Rules:**
-- Even-numbered modules use `--color-bg`, odd-numbered use `--color-bg-warm` (alternating backgrounds create visual rhythm)
+- Odd-numbered modules use `--color-bg`, even-numbered modules use `--color-bg-warm`; `styles.css` applies this automatically
 - Actor colors should be visually distinct from each other and from the accent
 - Code blocks always use `--color-bg-code` with light text
 
@@ -78,8 +78,8 @@ Complete CSS design tokens for the course. Copy this entire `:root` block into t
   --font-mono:     'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 
   /* --- TYPE SCALE (1.25 ratio) --- */
-  --text-xs:   0.75rem;    /* 12px — labels, badges */
-  --text-sm:   0.875rem;   /* 14px — secondary text, code */
+  --text-xs:   0.875rem;   /* 14px — labels, badges */
+  --text-sm:   1rem;       /* 16px — secondary text, code */
   --text-base: 1rem;       /* 16px — body text */
   --text-lg:   1.125rem;   /* 18px — lead paragraphs */
   --text-xl:   1.25rem;    /* 20px — screen headings */
@@ -131,9 +131,9 @@ Complete CSS design tokens for the course. Copy this entire `:root` block into t
   --space-20: 5rem;      /* 80px */
   --space-24: 6rem;      /* 96px */
 
-  --content-width:     800px;   /* standard reading width */
+  --content-width:     960px;   /* immersive exercise width; prose keeps its own measure */
   --content-width-wide: 1000px; /* for side-by-side layouts */
-  --nav-height:        50px;
+  --nav-height:        64px;
   --radius-sm:  8px;
   --radius-md:  12px;
   --radius-lg:  16px;
@@ -144,7 +144,8 @@ Complete CSS design tokens for the course. Copy this entire `:root` block into t
 **Module layout:**
 ```css
 .module {
-  min-height: 100dvh;       /* fallback: 100vh */
+  min-height: 100vh;        /* fallback first */
+  min-height: 100dvh;
   scroll-snap-align: start;
   padding: var(--space-16) var(--space-6);
   padding-top: calc(var(--nav-height) + var(--space-12));
@@ -187,13 +188,14 @@ Use warm-tinted RGBA (44, 42, 40) — never pure black shadows.
 
 **Scroll-triggered reveal pattern:**
 ```css
-.animate-in {
+.animate-in { opacity: 1; transform: none; } /* readable if JS is unavailable */
+.motion-ready .animate-in {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity var(--duration-slow) var(--ease-out),
               transform var(--duration-slow) var(--ease-out);
 }
-.animate-in.visible {
+.motion-ready .animate-in.visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -227,6 +229,8 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
 ```
 
+`main.js` adds `.motion-ready` only when it can initialize reveal behavior. It also honors `prefers-reduced-motion`, removes animation delays, and keeps every element visible. Never add a separate unpausable animation loop inside module HTML.
+
 ---
 
 ## Navigation & Progress
@@ -234,14 +238,16 @@ document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
 **HTML structure:**
 ```html
 <nav class="nav">
-  <div class="progress-bar" role="progressbar" aria-valuenow="0"></div>
+  <div class="progress-bar" role="progressbar" aria-label="Course progress" aria-valuenow="0"></div>
   <div class="nav-inner">
-    <span class="nav-title">Course Title</span>
-    <div class="nav-dots">
-      <button class="nav-dot" data-target="module-1" data-tooltip="Module 1 Name"
-              role="tab" aria-label="Module 1"></button>
+    <a class="nav-title" href="#course-overview">Project Name</a>
+    <p class="nav-status" aria-live="polite">Module 1 of 5 · Module name</p>
+    <div class="nav-dots" aria-label="Course modules" hidden>
+      <button class="nav-dot" type="button" data-target="module-1"
+              data-tooltip="Module 1 Name" aria-label="Module 1: Module 1 Name"></button>
       <!-- one per module -->
     </div>
+    <!-- searchable Contents and Help controls are supplied by _base.html -->
   </div>
 </nav>
 ```
@@ -252,25 +258,24 @@ function updateProgressBar() {
   const scrollTop = window.scrollY;
   const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
   const progress = (scrollTop / scrollHeight) * 100;
-  progressBar.style.width = progress + '%';
+  progressBar.style.transform = `scaleX(${progress / 100})`;
 }
 window.addEventListener('scroll', () => {
   requestAnimationFrame(updateProgressBar);
 }, { passive: true });
 ```
 
-**Nav dot states:**
-- Default: `border: 2px solid var(--color-text-muted)`, empty center
-- Current: `border-color: var(--color-accent)`, filled center, subtle glow shadow
-- Visited: `background: var(--color-accent)`, filled solid
+**Nav behavior:**
+- Module dots stay hidden in the shipped shell; the persistent status gives location without adding simultaneous choices
+- Direct module navigation lives in the searchable **Contents** panel, while J/K and arrow shortcuts accelerate linear reading
+- Hidden dots retain the module metadata used by the shared engine; current location is written in the persistent `.nav-status`
+- The searchable Contents panel exposes every module title without requiring hover or memory
+- Saved progress offers Resume or Start from the beginning; Help documents keyboard shortcuts
 
 **Keyboard navigation:**
 ```javascript
-document.addEventListener('keydown', (e) => {
-  if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
-  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { nextModule(); e.preventDefault(); }
-  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { prevModule(); e.preventDefault(); }
-});
+// main.js ignores every interactive control before handling J/K, arrows,
+// Home, End, and ?. Never add a second global keyboard handler in a module.
 ```
 
 ---
@@ -279,17 +284,17 @@ document.addEventListener('keydown', (e) => {
 
 **HTML template for each module:**
 ```html
-<section class="module" id="module-N" style="background: var(--color-bg or --color-bg-warm)">
+<section class="module" id="module-N">
   <div class="module-content">
     <header class="module-header animate-in">
-      <span class="module-number">0N</span>
-      <h1 class="module-title">Module Title</h1>
+      <span class="module-number" aria-hidden="true">0N</span>
+      <h2 class="module-title">Module Title</h2>
       <p class="module-subtitle">One-line description of what this module teaches</p>
     </header>
 
     <div class="module-body">
       <section class="screen animate-in">
-        <h2 class="screen-heading">Screen Title</h2>
+        <h3 class="screen-heading">Screen Title</h3>
         <p>Content...</p>
         <!-- Interactive elements, code translations, etc. -->
       </section>
@@ -325,7 +330,10 @@ document.addEventListener('keydown', (e) => {
     --text-5xl: 1.875rem;
     --text-6xl: 2.25rem;
   }
-  .module { padding: var(--space-8) var(--space-4); }
+  .module {
+    padding: var(--space-8) var(--space-4);
+    padding-top: calc(var(--nav-height) + var(--space-8));
+  }
   .pattern-cards { grid-template-columns: 1fr; }
   .flow-steps { flex-direction: column; }
   .flow-arrow { transform: rotate(90deg); }
@@ -349,9 +357,9 @@ document.addEventListener('keydown', (e) => {
 body {
   background: var(--color-bg);
   background-image: radial-gradient(
-    ellipse at 20% 50%,
-    rgba(217, 79, 48, 0.03) 0%,
-    transparent 50%
+    ellipse at 20% 18%,
+    color-mix(in srgb, var(--color-accent) 5%, transparent),
+    transparent 42%
   );
 }
 
@@ -366,22 +374,21 @@ html {
 
 ## Code Block Globals
 
-All code blocks in the course — whether inside translation blocks, standalone snippets, or quiz challenges — must wrap text and never show a horizontal scrollbar. This is a teaching tool, not an IDE.
+Code blocks preserve the exact indentation and token shape from the source repository. Choose naturally short excerpts; when a line is genuinely long, the code container may scroll horizontally without making the whole page overflow.
 
 ```css
-pre, code {
-  white-space: pre-wrap;       /* wrap long lines */
-  word-break: break-word;      /* break mid-word if absolutely needed */
-  overflow-x: hidden;          /* no horizontal scrollbar — ever */
-}
-/* Hide scrollbars on code containers */
-.translation-code::-webkit-scrollbar,
-pre::-webkit-scrollbar {
-  display: none;
+code { overflow-wrap: anywhere; }
+pre { max-width: 100%; overflow-x: auto; white-space: pre; }
+.translation-code pre,
+.translation-code code,
+.bug-code code {
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 ```
 
-Code snippets must be **exact copies** from the real codebase — never modified, trimmed, or simplified. Instead, choose naturally short (5-10 line) sections from the code that illustrate the concept well. If a longer block is needed, show it all — the wrapping CSS will handle readability.
+Code snippets must be **exact copies** from the real codebase — never modified, trimmed, or simplified. Choose naturally short 5–10-line sections so preserved indentation remains readable at every breakpoint.
 
 ---
 
@@ -393,7 +400,7 @@ For code blocks on the dark `--color-bg-code` background:
 .code-keyword  { color: #CBA6F7; }  /* purple — if, else, return, function */
 .code-string   { color: #A6E3A1; }  /* green — "strings" */
 .code-function { color: #89B4FA; }  /* blue — function names */
-.code-comment  { color: #6C7086; }  /* muted gray — // comments */
+.code-comment  { color: #9399B2; }  /* AA-safe muted gray — // comments */
 .code-number   { color: #FAB387; }  /* peach — numbers */
 .code-property { color: #F9E2AF; }  /* yellow — object keys */
 .code-operator { color: #94E2D5; }  /* teal — =, =>, +, etc. */

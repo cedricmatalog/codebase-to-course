@@ -20,7 +20,7 @@ You're not trying to become a software engineer. You want coding as a superpower
 
 ## What the course looks like
 
-The output is a **single HTML file** — no dependencies, no setup, works offline. It includes:
+The output is a small, portable course directory (`index.html`, `styles.css`, and `main.js`) with no install or server required. Course content and interactivity work offline; the branded web fonts enhance the page when a connection is available. It includes:
 
 - **Scroll-based modules** with progress tracking and keyboard navigation
 - **Code ↔ Plain English translations** — real code on the left, what it means on the right

@@ -26,12 +26,16 @@ File: src/another/file.ts (lines 45-52)
 
 Check which elements this module needs. Include enough detail for the writing agent to build them.
 
+Choose exactly **one primary interaction**. Put any supporting interaction inside a native `<details class="practice-extra">` disclosure labeled `Optional · [specific outcome]`, so the learner meets one control model at a time and can judge the value before expanding it. Introduce every interaction with one consistent sentence beginning **“Do this next:”**.
+
 - [ ] **Code↔English translation** — which snippet(s) from above
 - [ ] **Quiz** — [number] questions, style: [scenario / debugging / architecture / tracing]. Brief description of each question's angle.
 - [ ] **Group chat animation** — actors: [list]. Message flow summary: [who says what to whom, in what order]
 - [ ] **Data flow animation** — actors: [list]. Steps: [sequence of highlights and packet movements]
 - [ ] **Drag-and-drop** — items: [list], targets: [list]
 - [ ] **Other** — [architecture diagram, layer toggle, pattern cards, etc.]
+
+For every selected interaction, specify its initial instruction, success state, recoverable error state, and concise text announcement. Use unique IDs prefixed with the module number. The shared engine supplies keyboard and touch behavior; module markup must use the native-button patterns from `interactive-elements.md` without custom scripts.
 
 ### Reference Files to Read
 

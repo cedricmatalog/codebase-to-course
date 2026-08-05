@@ -46,7 +46,7 @@ The learner already has context that traditional students don't — they've *use
 
 Every module answers **"why should I care?"** before "how does it work?" The answer to "why should I care?" is always practical: *because this knowledge helps you steer AI better, debug faster, or make smarter architectural decisions.*
 
-The directory-based output is intentional: separating CSS/JS from content means AI never regenerates boilerplate, each module is written independently (keeping output size small and quality high), and the assembled `index.html` works offline with zero setup.
+The directory-based output is intentional: separating CSS/JS from content means AI never regenerates boilerplate, each module is written independently (keeping output size small and quality high), and the assembled course works locally with zero setup. Course content and interactivity work offline; web fonts are progressive enhancement.
 
 ---
 
@@ -59,10 +59,12 @@ Before writing course HTML, deeply understand the codebase. Read all the key fil
 **What to extract:**
 - The main "actors" (components, services, modules) and their responsibilities
 - The primary user journey (what happens when someone uses the app end-to-end)
+- The exact entry action and source file that will anchor the course opening
 - Key APIs, data flows, and communication patterns
 - Clever engineering patterns (caching, lazy loading, error handling, etc.)
 - Real bugs or gotchas (if visible in git history or comments)
 - The tech stack and why each piece was chosen
+- Three concrete capabilities for the final recap and one repository-specific prompt the learner can try next
 
 **Figure out what the app does yourself** by reading the README, the main entry points, and the UI code. Don't ask the user to explain the product — they may not be familiar with it either. The course should open by explaining what the app does in plain language (a brief "here's what this thing does and why it's interesting") before diving into how it works. The first module should start with a concrete user action — "imagine you paste a YouTube URL and click Analyze — here's what happens under the hood."
 
@@ -133,8 +135,8 @@ The course output is a **directory**, not a single file. All CSS and JS are pre-
 course-name/
   styles.css       ← copied verbatim from references/styles.css
   main.js          ← copied verbatim from references/main.js
-  _base.html       ← customized shell (title, accent color, nav dots)
-  _footer.html     ← copied verbatim from references/_footer.html
+  _base.html       ← customized opening, navigation, identity, and accent
+  _footer.html     ← customized recap, takeaways, and next AI prompt
   build.sh         ← copied verbatim from references/build.sh
   briefs/          ← module briefs (complex codebases only, can delete after build)
   modules/
@@ -144,16 +146,22 @@ course-name/
   index.html       ← assembled by build.sh (do not write manually)
 ```
 
-**Step 1 (both paths): Setup** — Create the course directory. Copy these four files verbatim using Read + Write (do not regenerate their contents):
+**Step 1 (both paths): Setup** — Create the course directory. Copy these three files verbatim using Read + Write (do not regenerate their contents):
 - `references/styles.css` → `course-name/styles.css`
 - `references/main.js` → `course-name/main.js`
-- `references/_footer.html` → `course-name/_footer.html`
 - `references/build.sh` → `course-name/build.sh`
 
-**Step 2 (both paths): Customize `_base.html`** — Read `references/_base.html`, then write it to `course-name/_base.html` with exactly three substitutions:
-- Both instances of `COURSE_TITLE` → the actual course title
-- The four `ACCENT_*` placeholders → the chosen accent color values (pick one palette from the comments in `_base.html`)
-- `NAV_DOTS` → one `<button class="nav-dot" ...>` per module
+**Step 2 (both paths): Customize the course shell** — Read `references/_base.html` and `references/_footer.html`, then write both into the course directory with every placeholder replaced:
+- `COURSE_TITLE` and `PROJECT_NAME` → specific, concise names grounded in the source repository
+- `COURSE_PROMISE` → one factual sentence naming what the learner will understand or be able to do
+- `ENTRY_ACTION` and `ENTRY_FILE` → a real user action and the exact source path where its code trail begins
+- The four `ACCENT_*` placeholders → one complete palette from `_base.html`; do not mix palettes
+- `NAV_DOTS` → one `<button class="nav-dot" type="button" data-target="module-N" data-tooltip="FULL_MODULE_TITLE" aria-label="Module N: FULL_MODULE_TITLE"></button>` per module
+- `COMPLETION_SUMMARY` → a factual recap of the architecture the learner just traced
+- `TAKEAWAY_1`, `TAKEAWAY_2`, and `TAKEAWAY_3` → concrete capabilities, written as actions the learner can now perform
+- `NEXT_PROMPT` → a useful prompt tied to this repository that the learner can paste into an AI coding tool
+
+The opening action/path and the closing prompt are mandatory codebase fingerprints, not decorative copy. They must change for every source repository.
 
 **Step 3: Write modules** — This is where the paths diverge.
 
@@ -186,13 +194,15 @@ This produces `index.html`. Open it in the browser.
 - **Never regenerate** `styles.css` or `main.js` — always copy from references
 - Module files contain only `<section>` content — no boilerplate
 - Use CSS `scroll-snap-type: y proximity` (NOT `mandatory`)
-- Use `min-height: 100dvh` with `100vh` fallback on `.module`
+- Use `min-height: 100vh` followed by `min-height: 100dvh` on `.module`
 - Interactive element JS is in `main.js`; wire up via `data-*` attributes and CSS class names as shown in `references/interactive-elements.md`
 - Chat containers need `id` attributes; flow animations need `data-steps='[...]'` JSON on `.flow-animation`
 
 ### Phase 4: Review and Open
 
 After running `build.sh`, open `index.html` in the browser. Walk the user through what was built and ask for feedback on content, design, and interactivity.
+
+Review the complete path at desktop and mobile widths. Use keyboard-only navigation for every quiz, tooltip, diagram, layer switcher, bug challenge, and matching exercise. Confirm that Contents names every module, Play all can pause, malformed widget data shows a readable fallback, saved progress can be resumed or cleared, and the final recap contains no unresolved placeholders.
 
 ---
 
