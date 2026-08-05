@@ -3,13 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="COURSE_PROMISE">
-  <title>COURSE_TITLE</title>
-
-  <!-- Web fonts are a progressive enhancement; the course remains usable offline. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; frame-src 'none'; form-action 'self'">
+  <meta name="description" content="Interactive developer onboarding course">
+  <title>{{COURSE_TITLE}}</title>
 
   <link rel="stylesheet" href="styles.css">
 
@@ -24,10 +20,10 @@
   -->
   <style>
     :root {
-      --color-accent:       ACCENT_COLOR;
-      --color-accent-hover: ACCENT_HOVER;
-      --color-accent-light: ACCENT_LIGHT;
-      --color-accent-muted: ACCENT_MUTED;
+      --color-accent:       {{ACCENT_COLOR}};
+      --color-accent-hover: {{ACCENT_HOVER}};
+      --color-accent-light: {{ACCENT_LIGHT}};
+      --color-accent-muted: {{ACCENT_MUTED}};
     }
   </style>
 
@@ -40,14 +36,14 @@
   <nav class="nav" id="nav" aria-label="Course navigation">
     <div class="progress-bar" id="progress-bar" role="progressbar" aria-label="Course progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Course not started"></div>
     <div class="nav-inner">
-      <a class="nav-title" href="#course-overview">PROJECT_NAME</a>
+      <a class="nav-title" href="#course-overview">{{PROJECT_NAME}}</a>
       <p class="nav-status" id="nav-status" aria-live="polite">Course overview</p>
       <div class="nav-controls">
         <div class="nav-dots" id="nav-dots" aria-label="Course modules" hidden>
           <!-- Insert one .nav-dot button per module. Each needs type="button",
-               a data-target matching its module id, a full data-tooltip title,
-               and an aria-label in the form "Module N: Title". -->
-          NAV_DOTS
+               a data-target matching its author-created module id, plus generic
+               data-tooltip and aria-label values in the form "Module N". -->
+          {{NAV_DOTS}}
         </div>
         <button class="nav-action" id="outline-toggle" type="button" aria-expanded="false" aria-controls="course-outline">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5.5h12M4 10h12M4 14.5h12"/></svg>
@@ -111,20 +107,20 @@
 
   <header class="course-intro" id="course-overview">
     <div class="course-intro-content">
-      <h1>COURSE_TITLE</h1>
-      <p class="course-promise">COURSE_PROMISE</p>
+      <h1>{{COURSE_TITLE}}</h1>
+      <p class="course-promise">{{COURSE_PROMISE}}</p>
 
       <div class="repo-trace" aria-label="Your first codebase trace">
         <div class="repo-trace-node">
           <span>1 · Start with a real action</span>
-          <strong>ENTRY_ACTION</strong>
+          <strong>{{ENTRY_ACTION}}</strong>
         </div>
         <svg class="repo-trace-line" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true">
           <path d="M2 16h110"/><path d="m104 8 10 8-10 8"/>
         </svg>
         <div class="repo-trace-node repo-trace-file">
           <span>2 · Instructions that define the course</span>
-          <code>ENTRY_FILE</code>
+          <code>{{ENTRY_FILE}}</code>
         </div>
       </div>
 
@@ -136,4 +132,4 @@
   </header>
 
   <main id="main" tabindex="-1">
-    <!-- modules/*.html content is assembled here by build.sh -->
+    <!-- Manifest-listed module content is assembled here by build.mjs. -->

@@ -1,0 +1,17 @@
+{
+  "name": "codebase-to-course-maintainer-tooling",
+  "version": "0.0.0-private",
+  "private": true,
+  "type": "module",
+  "description": "Private validation tooling for the Codebase to Course Agent Skill repository.",
+  "scripts": {
+    "check:static": "node --check scripts/test.mjs && node --check scripts/verify-template.mjs && node --check scripts/browser-smoke.mjs && node --check skills/codebase-to-course/references/build.mjs && node --check skills/codebase-to-course/scripts/escape-html.mjs && node --check skills/codebase-to-course/scripts/fingerprint-evidence.mjs",
+    "test": "npm run check:static && node scripts/test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

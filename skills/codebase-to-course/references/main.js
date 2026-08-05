@@ -70,6 +70,12 @@
     element.classList.add('show', state);
   }
 
+  function embeddedText(context, selector, fallback) {
+    const element = $(selector, context);
+    const value = element && element.textContent.trim();
+    return value || fallback;
+  }
+
   const storage = {
     get(key) {
       try { return window.localStorage.getItem(key); } catch (_) { return null; }
@@ -97,6 +103,7 @@
   const outlineEmpty = $('#outline-empty');
   const courseKey = 'codebase-to-course:' + (document.title || window.location.pathname);
   let outlineLinks = [];
+  const outlineSearchText = new WeakMap();
   let lastSavedLocation = null;
   let scrollFrame = null;
   let resumeDecisionPending = false;
@@ -104,7 +111,7 @@
   function moduleTitle(index) {
     const dot = navDots[index];
     const module = modules[index];
-    return (dot && dot.dataset.tooltip) || (module && $('.module-title', module) && $('.module-title', module).textContent.trim()) || `Module ${index + 1}`;
+    return (module && $('.module-title', module) && $('.module-title', module).textContent.trim()) || (dot && dot.dataset.tooltip) || `Module ${index + 1}`;
   }
 
   function currentLocation() {
@@ -156,7 +163,10 @@
       : `Module ${location.index + 1} of ${modules.length} · ${moduleTitle(location.index)}`;
     if (location.type === 'completion') statusText = compactStatus ? 'Course complete' : `Course complete · ${modules.length} modules`;
     if (navStatus && navStatus.textContent !== statusText) navStatus.textContent = statusText;
-    if (progressBar) progressBar.setAttribute('aria-valuetext', `${Math.round(percent)}% complete · ${statusText}`);
+    const accessibleStatus = location.type === 'module'
+      ? `module ${location.index + 1} of ${modules.length}`
+      : location.type === 'completion' ? 'course complete' : 'course overview';
+    if (progressBar) progressBar.setAttribute('aria-valuetext', `${Math.round(percent)}% complete · ${accessibleStatus}`);
 
     navDots.forEach((dot, index) => {
       const isCurrent = location.type === 'module' && index === location.index;
@@ -197,7 +207,7 @@
       link.className = 'outline-link';
       link.href = '#' + dot.dataset.target;
       link.textContent = moduleTitle(index);
-      link.dataset.searchText = moduleTitle(index).toLocaleLowerCase();
+      outlineSearchText.set(link, moduleTitle(index).toLocaleLowerCase());
       link.addEventListener('click', () => closeOutline(false));
       item.appendChild(link);
       outlineList.appendChild(item);
@@ -222,7 +232,7 @@
       const query = outlineSearch.value.trim().toLocaleLowerCase();
       let visibleCount = 0;
       outlineLinks.forEach(link => {
-        const matches = !query || link.dataset.searchText.includes(query);
+        const matches = !query || (outlineSearchText.get(link) || '').includes(query);
         link.parentElement.hidden = !matches;
         if (matches) visibleCount += 1;
       });
@@ -404,7 +414,7 @@
     tip.className = 'term-tooltip';
     tip.id = `term-definition-${index + 1}`;
     tip.setAttribute('role', 'tooltip');
-    tip.textContent = term.dataset.definition || 'No definition was provided for this term.';
+    tip.textContent = embeddedText(term, '.term-definition', 'No definition was provided for this term.');
     document.body.appendChild(tip);
     term.setAttribute('aria-describedby', tip.id);
 
@@ -484,12 +494,12 @@
       $$('.quiz-option', question).forEach(option => { option.disabled = true; });
       if (selected.dataset.value === correct) {
         selected.classList.add('correct');
-        setFeedback(feedback, 'Exactly.', question.dataset.explanationRight || 'That answer follows the code path shown above.', 'success');
+        setFeedback(feedback, 'Exactly.', embeddedText(question, '.quiz-explanation-right', 'That answer follows the code path shown above.'), 'success');
       } else {
         selected.classList.add('incorrect');
         const correctButton = $$('.quiz-option', question).find(option => option.dataset.value === correct);
         if (correctButton) correctButton.classList.add('correct');
-        setFeedback(feedback, 'Not quite.', question.dataset.explanationWrong || 'Review the relevant code path, then try again.', 'error');
+        setFeedback(feedback, 'Not quite.', embeddedText(question, '.quiz-explanation-wrong', 'Review the relevant code path, then try again.'), 'error');
       }
     });
     const checkButton = $('.quiz-check-btn', container);
@@ -582,7 +592,7 @@
       }
       target.textContent = chip.textContent.trim();
       target.dataset.placed = chip.dataset.answer;
-      target.setAttribute('aria-label', `${chip.textContent.trim()} placed here. Select to replace it.`);
+      target.setAttribute('aria-label', 'An item is placed here. Select to replace it.');
       target.classList.remove('correct-placed', 'incorrect-placed');
       chip.classList.add('placed');
       chip.classList.remove('selected');
@@ -821,8 +831,14 @@
     makeStatus(progress);
 
     try {
-      steps = JSON.parse(container.dataset.steps || '[]');
-      if (!Array.isArray(steps) || !steps.length) throw new Error('No flow steps were supplied.');
+      steps = $$('.flow-step', container).map((element, index) => ({
+        highlight: element.dataset.highlight,
+        packet: element.dataset.packet === 'true',
+        from: element.dataset.from,
+        to: element.dataset.to,
+        label: embeddedText(element, '.flow-step-text', `Step ${index + 1}`)
+      }));
+      if (!steps.length) throw new Error('No flow steps were supplied.');
     } catch (_) {
       const error = document.createElement('p');
       error.className = 'flow-error';
@@ -926,7 +942,7 @@
         });
         component.classList.add('active');
         component.setAttribute('aria-pressed', 'true');
-        if (description) description.textContent = component.dataset.desc || 'No description was provided for this component.';
+        if (description) description.textContent = embeddedText(component, '.arch-component-description', 'No description was provided for this component.');
       };
       component.addEventListener('click', activate);
       activateOnKeyboard(component, activate);
@@ -954,14 +970,14 @@
     if (isCorrect) {
       element.classList.add('correct');
       element.setAttribute('aria-pressed', 'true');
-      setFeedback(feedback, 'Found it.', element.dataset.explanation || 'This line creates the behavior described in the challenge.', 'success');
+      setFeedback(feedback, 'Found it.', embeddedText(element, '.bug-explanation', 'This line creates the behavior described in the challenge.'), 'success');
       $$('.bug-line', challenge).forEach(line => {
         if (line.tagName === 'BUTTON') line.disabled = true;
         else line.setAttribute('aria-disabled', 'true');
       });
     } else {
       element.classList.add('incorrect');
-      setFeedback(feedback, 'Not this line.', element.dataset.hint || 'Keep looking for the line that changes timing, data, or control flow.', 'error');
+      setFeedback(feedback, 'Not this line.', embeddedText(element, '.bug-hint', 'Keep looking for the line that changes timing, data, or control flow.'), 'error');
       window.setTimeout(() => {
         element.classList.remove('incorrect');
         feedback.className = 'bug-feedback';
@@ -1018,7 +1034,7 @@
     const description = $('.layer-description', demo);
     if (description) {
       makeStatus(description);
-      description.textContent = button.dataset.description || description.textContent;
+      description.textContent = embeddedText(button, '.layer-tab-description', description.textContent);
     }
   };
 

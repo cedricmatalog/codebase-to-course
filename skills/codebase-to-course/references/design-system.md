@@ -69,13 +69,10 @@ Reference for the canonical system in `references/styles.css`. Copy `styles.css`
 
 ```css
 :root {
-  /* --- FONTS ---
-     Display: bold, geometric, personality-driven. NOT Inter/Roboto/Arial.
-     Body: readable with character. NOT system fonts.
-     Mono: developer-friendly with clear character distinction. */
-  --font-display:  'Bricolage Grotesque', Georgia, serif;
-  --font-body:     'DM Sans', -apple-system, sans-serif;
-  --font-mono:     'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  /* --- OFFLINE FONT STACKS --- */
+  --font-display: ui-rounded, 'Arial Rounded MT Bold', Georgia, serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
 
   /* --- TYPE SCALE (1.25 ratio) --- */
   --text-xs:   0.875rem;   /* 14px — labels, badges */
@@ -97,12 +94,7 @@ Reference for the canonical system in `references/styles.css`. Copy `styles.css`
 }
 ```
 
-**Google Fonts link (put in `<head>`):**
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-```
+Do not add web-font links. The system stacks keep the course portable, private, and usable from `file://` without a network connection.
 
 **Rules:**
 - Module numbers: `--text-6xl`, font-display, weight 800, `--color-accent` with 15% opacity
@@ -244,7 +236,7 @@ document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
     <p class="nav-status" aria-live="polite">Module 1 of 5 · Module name</p>
     <div class="nav-dots" aria-label="Course modules" hidden>
       <button class="nav-dot" type="button" data-target="module-1"
-              data-tooltip="Module 1 Name" aria-label="Module 1: Module 1 Name"></button>
+              data-tooltip="Module 1" aria-label="Module 1"></button>
       <!-- one per module -->
     </div>
     <!-- searchable Contents and Help controls are supplied by _base.html -->
@@ -287,6 +279,7 @@ window.addEventListener('scroll', () => {
 <section class="module" id="module-N">
   <div class="module-content">
     <header class="module-header animate-in">
+      <span class="module-stage">Trace the request</span>
       <span class="module-number" aria-hidden="true">0N</span>
       <h2 class="module-title">Module Title</h2>
       <p class="module-subtitle">One-line description of what this module teaches</p>

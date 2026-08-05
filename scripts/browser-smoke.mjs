@@ -1,16 +1,8 @@
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
-import { createRequire } from 'node:module';
-import { extname, resolve, sep } from 'node:path';
-
-const require = createRequire(import.meta.url);
-let playwright;
-try {
-  playwright = require('playwright');
-} catch (_) {
-  playwright = require('/Users/cedric/.npm/_npx/e41f203b7505f1fb/node_modules/playwright');
-}
-const { chromium } = playwright;
+import { extname, join, resolve, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { chromium } from 'playwright';
 const fixtureRoot = resolve(process.argv[2] || '');
 
 if (!process.argv[2]) throw new Error('Usage: node scripts/browser-smoke.mjs <course-fixture-directory>');
@@ -44,7 +36,7 @@ await new Promise((resolveListening, reject) => {
 const address = server.address();
 const baseUrl = `http://127.0.0.1:${address.port}`;
 const browser = await chromium.launch({ headless: true });
-const results = { desktop: {}, mobile: {}, recovery: {}, screenshots: {} };
+const results = { desktop: {}, file: {}, mobile: {}, recovery: {}, screenshots: {} };
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -115,7 +107,8 @@ try {
       dotsHidden: Array.from(document.querySelectorAll('.nav-dot')).every(dot => dot.getClientRects().length === 0),
       progressHeight: document.querySelector('#progress-bar').getBoundingClientRect().height,
       optionalLabels: Array.from(document.querySelectorAll('.practice-extra > summary'), summary => summary.textContent.trim()),
-      readableType: ['.activity-instruction', '.btn', '.translation-code'].every(selector => Number.parseFloat(getComputedStyle(document.querySelector(selector)).fontSize) >= 14)
+      readableType: ['.activity-instruction', '.btn', '.translation-code'].every(selector => Number.parseFloat(getComputedStyle(document.querySelector(selector)).fontSize) >= 14),
+      csp: document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content || ''
     };
   });
   assert(structure.title === 'Inside Codebase to Course', 'Course title was not customized.');
@@ -130,6 +123,7 @@ try {
   assert(structure.progressHeight >= 4, 'Course progress is too visually subtle.');
   assert(structure.optionalLabels.length === 4 && structure.optionalLabels.every(label => label.startsWith('Optional · ') && label.length > 18), 'Optional practice labels do not describe their outcome.');
   assert(structure.readableType, 'Instruction, control, or code text fell below the readable type floor.');
+  assert(structure.csp.includes("script-src 'self'") && structure.csp.includes("object-src 'none'") && structure.csp.includes("connect-src 'none'"), 'Course shell is missing its restrictive content security policy.');
 
   assert(await desktop.evaluate(() => document.activeElement === document.body), 'Initialization moved focus away from the page start.');
   await desktop.keyboard.press('Tab');
@@ -183,8 +177,9 @@ try {
   await desktop.mouse.move(0, 0);
   await desktop.keyboard.press('Escape');
   assert(await desktop.locator('.term-tooltip.visible').count() === 0, 'Glossary tooltip remained visible after dismissal.');
-  await desktop.screenshot({ path: '/tmp/codebase-course-template-desktop.png', fullPage: true });
-  results.screenshots.desktop = '/tmp/codebase-course-template-desktop.png';
+  const desktopScreenshot = join(fixtureRoot, 'desktop-smoke.png');
+  await desktop.screenshot({ path: desktopScreenshot, fullPage: true });
+  results.screenshots.desktop = desktopScreenshot;
 
   const quiz = desktop.locator('#quiz-module4');
   await quiz.locator('xpath=ancestor::details[1]/summary').click();
@@ -260,6 +255,22 @@ try {
   assert((await desktop.locator('#nav-status').textContent()).includes('Follow data and decisions'), 'Resume did not return to the saved module.');
   await desktopContext.close();
 
+  const fileContext = await browser.newContext({ viewport: { width: 1024, height: 768 } });
+  const filePage = await fileContext.newPage();
+  const fileErrors = [];
+  filePage.on('pageerror', error => fileErrors.push(error.message));
+  await filePage.goto(pathToFileURL(join(fixtureRoot, 'index.html')).href, { waitUntil: 'domcontentloaded' });
+  await filePage.waitForTimeout(150);
+  assert(await filePage.title() === 'Inside Codebase to Course', 'Direct file launch lost the customized title.');
+  assert(await filePage.locator('.module').count() === 4, 'Direct file launch lost manifest-listed modules.');
+  assert((await filePage.locator('.course-provenance').textContent()).includes('https://github.com/example/codebase-to-course'), 'Direct file launch lost visible provenance.');
+  await filePage.locator('#outline-toggle').click();
+  assert(await filePage.locator('#course-outline').isVisible(), 'Contents did not work from file://.');
+  assert(await filePage.locator('.outline-link').count() === 4, 'Direct file Contents did not list every module.');
+  assert(fileErrors.length === 0, `Direct file page errors: ${fileErrors.join('; ')}`);
+  results.file = { protocol: new URL(filePage.url()).protocol, modules: 4, outlineLinks: 4, pageErrors: fileErrors };
+  await fileContext.close();
+
   const mobileContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
   const mobile = await mobileContext.newPage();
   const mobileErrors = [];
@@ -295,8 +306,9 @@ try {
   await mobile.locator('#outline-toggle').click();
   assert(await mobile.locator('.outline-link').count() === 4, 'Mobile Contents lost module destinations.');
   await mobile.locator('#outline-close').click();
-  await mobile.screenshot({ path: '/tmp/codebase-course-template-mobile.png', fullPage: true });
-  results.screenshots.mobile = '/tmp/codebase-course-template-mobile.png';
+  const mobileScreenshot = join(fixtureRoot, 'mobile-smoke.png');
+  await mobile.screenshot({ path: mobileScreenshot, fullPage: true });
+  results.screenshots.mobile = mobileScreenshot;
   results.mobile = { ...mobileLayout, pageErrors: mobileErrors };
   assert(mobileErrors.length === 0, `Mobile page errors: ${mobileErrors.join('; ')}`);
   await mobileContext.close();

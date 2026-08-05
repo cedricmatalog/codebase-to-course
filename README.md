@@ -1,26 +1,20 @@
 # Codebase to Course
 
-Turn an unfamiliar repository into an interactive developer-onboarding course. New contributors get a practical mental model of the product, architecture, setup, key execution paths, testing and debugging workflow, and a sensible first contribution.
+Codebase to Course is an Agent Skill that turns repository evidence into an interactive developer-onboarding course. The installable skill is located at [`skills/codebase-to-course/`](skills/codebase-to-course/); root-level scripts and package metadata are maintainer tooling and are not part of the skill payload.
 
-## Quick start
+> **RELEASE BLOCKED:** This project is derived from Zara Zhang's original Codebase to Course repository, which currently provides no license granting redistribution or modification rights. Public distribution, marketplace publication, and claims that this fork is live or safe to install are blocked until the maintainer obtains explicit permission or a compatible upstream license. This repository does not invent or imply a license.
 
-Install globally with the open agent-skills CLI:
+## Install and use
 
-```bash
-npx skills add cedricmatalog/codebase-to-course -g
-```
-
-For a non-interactive install, choose your agent:
+The intended one-command Codex install, once redistribution permission or licensing is in place, is:
 
 ```bash
-# Codex
 npx skills add cedricmatalog/codebase-to-course -g -a codex -y
-
-# Claude Code
-npx skills add cedricmatalog/codebase-to-course -g -a claude-code -y
 ```
 
-Then open your coding agent inside the repository you want to learn and paste:
+For another supported coding agent, omit `-a codex -y` and choose the agent interactively.
+
+Then open your coding agent inside the repository you want to learn and use:
 
 ```text
 Use the codebase-to-course skill to create an interactive developer onboarding
@@ -28,66 +22,72 @@ course for this repository. Focus on setup, architecture, one key request flow,
 testing and debugging, and a first safe contribution.
 ```
 
-That is the complete setup. The generated course runs locally in a browser without a server.
-
-## Other ways to start
-
-```text
-Turn this repository into a developer onboarding course.
-
-Create an interactive architecture walkthrough for ./path/to/project.
-
-Onboard me to https://github.com/owner/repository and show me where to make my first change.
-```
-
-## What developers learn
-
-- How to install and run the project using commands found in the repository
-- What the major components own and how they communicate
-- How one real user action travels through the system
-- Where external services, databases, queues, and APIs enter the flow
-- How to test, debug, and validate a change
-- Which small first contribution is safe and valuable
-
-The course distinguishes verified facts from inferred behavior and links explanations to real files and code. It never invents undocumented setup commands or secret values.
-
-## What gets generated
-
-The result is a portable course directory:
-
-```text
-project-onboarding/
-├── index.html      # Open this in a browser
-├── styles.css
-├── main.js
-└── modules/       # Focused onboarding lessons
-```
-
-It includes scroll-based navigation, architecture and data-flow visualizations, real code with intent explanations, scenario-based exercises, glossary tooltips, progress saving, keyboard navigation, and responsive layouts.
-
-## Installation options
-
-The default install is project-local. Add `-g` to make the skill available in every repository:
+The open `skills` CLI discovers the skill from `skills/codebase-to-course/SKILL.md`. A project-local preview of discovery is:
 
 ```bash
-# Install only in the current project
-npx skills add cedricmatalog/codebase-to-course
-
-# Preview what the repository exposes without installing
-npx skills add cedricmatalog/codebase-to-course --list
-
-# Update a global installation later
-npx skills update codebase-to-course -g
+npx skills add . --list
 ```
 
-The installer supports Codex, Claude Code, Cursor, OpenCode, and many other coding agents. Node.js is required only to run the installer; generated courses have no build or runtime dependency.
+Do not publish or redistribute an installation while the release block above remains unresolved.
 
-## Why this format works
+## Release checklist
 
-Developer onboarding usually scatters knowledge across a README, source files, configuration, conversations, and unwritten conventions. This skill organizes that evidence around practical tasks: get the project running, trace a feature, locate the right ownership boundary, diagnose a failure, and make a first change.
+1. Obtain written permission from the upstream copyright holder or wait for an upstream license that clearly permits this fork's modification and redistribution. Record the permission; do not guess at a license.
+2. If you want this repository to stop appearing as a GitHub fork, follow GitHub's [detaching-a-fork procedure](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/detaching-a-fork). Detaching changes GitHub's repository relationship only; it does not remove attribution, copyright, or license obligations.
+3. Run the validation commands below and require the `Validate` workflow to pass on the exact release commit.
+4. From a clean temporary directory, verify `npx skills add cedricmatalog/codebase-to-course --list`, install it, and confirm that only `skills/codebase-to-course/` is delivered.
+5. Only after steps 1–4, update the release notice and announce the install command.
 
-Every course remains grounded in the source repository. Code excerpts are copied exactly, file paths are explicit, and uncertainty is labeled instead of guessed.
+## What the skill is designed to produce
 
----
+The skill instructs an agent to analyze a target repository, distinguish verified facts from inference, and generate a static course directory containing an assembled `index.html`, shared CSS and JavaScript, and authored module fragments. Intended course topics include setup, architecture, a real execution path, testing and debugging evidence, and a scoped first contribution.
 
-Originally created by [Zara Zhang](https://github.com/zarazhangrui/codebase-to-course). This fork adds a portable course runtime, accessibility and interaction improvements, validation tooling, and a developer-onboarding workflow.
+Generated courses may include source excerpts, paths, commands, architecture descriptions, and inferred behavior from the target repository. They must be reviewed by a person familiar with that repository before being treated as onboarding or operational documentation.
+
+## Repository structure
+
+```text
+.
+├── skills/
+│   └── codebase-to-course/
+│       ├── SKILL.md
+│       ├── agents/openai.yaml
+│       ├── references/
+│       └── scripts/                 # Trusted escaping/fingerprint helpers
+├── scripts/                    # Maintainer validation tooling
+├── .github/workflows/          # CI checks
+├── package.json                # Private maintainer tooling only
+└── README.md
+```
+
+## Validation
+
+Maintainers use Node.js and npm for repository checks. Browser binaries are not installed by `npm ci`; install Chromium separately before the full test run:
+
+```bash
+npm ci
+npx playwright install chromium
+npm test
+```
+
+`npm test` runs static syntax checks and `node scripts/test.mjs`, which owns the end-to-end maintainer validation flow. CI repeats these checks and performs a local `npx skills` discovery/install smoke check to confirm that the intended skill is discoverable and internal artifacts are not included in the installed payload.
+
+Validation provides evidence about the committed templates, assembly, and tested browser paths. It does not prove that every generated course is accurate, secure, accessible, or appropriate for a target repository; generated output still requires human review.
+
+## Security
+
+Treat the skill as instructions for an agent with access to the target repository and its available tools:
+
+- Review requested filesystem, shell, network, and Git operations before approving them.
+- Do not expose secret values. Environment-variable names may be documented, but credentials and local secret files must not be copied into a course.
+- Review generated source excerpts and architecture details before sharing a course outside the target repository's authorized audience.
+- Treat setup, test, clone, and validation commands as untrusted until they are traced to repository evidence and judged appropriate for the current environment.
+- Report suspected security issues privately to the repository maintainer rather than placing sensitive details in a public issue.
+
+No security audit or public safety guarantee is claimed while release remains blocked.
+
+## Provenance
+
+Originally created by [Zara Zhang](https://github.com/zarazhangrui/codebase-to-course). This fork reorganizes the project as a multi-skill-compatible repository and adds a portable course runtime, accessibility and interaction work, validation tooling, and a developer-onboarding workflow.
+
+Attribution records origin; it is not a substitute for a license. The upstream repository currently exposes no license, so explicit permission or a compatible upstream license is required before this fork can be publicly distributed.

@@ -2,7 +2,7 @@
 
 Implementation patterns for every interactive element type used in courses. Pick the elements that best serve each module's teaching goal.
 
-> **Architecture note:** All CSS and JavaScript for these elements live in `references/styles.css` and `references/main.js`, which are copied verbatim into every course directory. When writing module HTML files, use only the HTML patterns below — do **not** inline `<style>` or `<script>` tags for these elements. The engines in `main.js` auto-initialize on page load by scanning for the relevant class names and `data-*` attributes described here.
+> **Architecture and safety note:** All CSS and JavaScript for these elements live in `references/styles.css` and `references/main.js`, which are copied verbatim into every course directory. When writing module HTML files, use only the HTML patterns below—never inline `<style>` or `<script>`. Repository-derived prose and source text belongs in escaped text nodes, including the hidden text nodes shown here. `data-*`, `id`, `class`, and ARIA attributes may contain only fixed author-created identifiers or generic template labels. The builder rejects the legacy prose-bearing attributes.
 
 ## Table of Contents
 1. [Code ↔ English Translation Blocks](#code--english-translation-blocks)
@@ -117,15 +117,12 @@ The most important teaching element. Shows real code from the project on the lef
 
 For testing understanding with instant feedback. Each question has options, one correct answer, and per-question explanations.
 
-**Wiring:** `main.js` auto-initializes the options and the `.quiz-check-btn` / `.quiz-reset-btn` controls inside every uniquely identified `.quiz-container`. Per-question explanations go in `data-explanation-right` and `data-explanation-wrong` on the `.quiz-question-block`.
+**Wiring:** `main.js` auto-initializes the options and the `.quiz-check-btn` / `.quiz-reset-btn` controls inside every uniquely identified `.quiz-container`. Put per-question explanations in hidden `.quiz-explanation-right` and `.quiz-explanation-wrong` text nodes.
 
 **HTML:**
 ```html
 <div class="quiz-container" id="quiz-module3">
-  <div class="quiz-question-block"
-       data-correct="option-b"
-       data-explanation-right="Exactly — because X is responsible for Y in this architecture."
-       data-explanation-wrong="Not quite. Think about where Y lives in the codebase...">
+  <div class="quiz-question-block" data-correct="option-b">
     <h3 class="quiz-question">Question text here?</h3>
     <div class="quiz-options">
       <button class="quiz-option" type="button" data-value="option-a">
@@ -141,6 +138,8 @@ For testing understanding with instant feedback. Each question has options, one 
         <span>Answer C</span>
       </button>
     </div>
+    <p class="quiz-explanation-right" hidden>Exactly—because X is responsible for Y in this architecture.</p>
+    <p class="quiz-explanation-wrong" hidden>Not quite. Review where Y lives, then try again.</p>
     <div class="quiz-feedback"></div>
   </div>
 
@@ -273,17 +272,22 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
 
 Step-by-step visualization of data moving between components. User clicks "Next Step" to advance.
 
-**Wiring:** `main.js` auto-initializes every `.flow-animation` on page load. Pass steps as JSON in `data-steps`. Each step object: `{ highlight: "flow-actor-id", label: "description", packet: true, from: "actor-id-suffix", to: "actor-id-suffix" }`. Actor element IDs must be `flow-actor-1`, `flow-actor-2`, etc. Control buttons need classes `.flow-next-btn` and `.flow-reset-btn`.
-
-> **Attribute safety:** Because the example uses a single-quoted `data-steps` attribute, encode apostrophes inside labels as `&apos;`. If malformed JSON reaches the browser, the engine now shows a readable recovery message while preserving the surrounding lesson.
+**Wiring:** `main.js` auto-initializes every `.flow-animation` on page load. Each hidden `.flow-step` uses only fixed author-created actor IDs in `data-highlight`, `data-from`, and `data-to`; its human-readable description goes in a `.flow-step-text` text node. Actor element IDs must be fixed safe IDs such as `flow-m3-actor-1`. Control buttons need classes `.flow-next-btn` and `.flow-reset-btn`.
 
 **HTML:**
 ```html
-<div class="flow-animation" data-steps='[
-  {"highlight":"flow-m3-actor-1","label":"User clicks the button"},
-  {"highlight":"flow-m3-actor-1","label":"Frontend sends request","packet":true,"from":"m3-actor-1","to":"m3-actor-2"},
-  {"highlight":"flow-m3-actor-2","label":"Backend calls the database","packet":true,"from":"m3-actor-2","to":"m3-actor-3"}
-]'>
+<div class="flow-animation">
+  <ol class="flow-step-data" hidden>
+    <li class="flow-step" data-highlight="flow-m3-actor-1">
+      <span class="flow-step-text">The entry action reaches the first component.</span>
+    </li>
+    <li class="flow-step" data-highlight="flow-m3-actor-2" data-packet="true" data-from="m3-actor-1" data-to="m3-actor-2">
+      <span class="flow-step-text">The first component delegates the request.</span>
+    </li>
+    <li class="flow-step" data-highlight="flow-m3-actor-3" data-packet="true" data-from="m3-actor-2" data-to="m3-actor-3">
+      <span class="flow-step-text">The final component produces the documented result.</span>
+    </li>
+  </ol>
   <div class="flow-actors">
     <div class="flow-actor" id="flow-m3-actor-1">
       <div class="flow-actor-icon">A</div>
@@ -332,11 +336,12 @@ Full-system diagram where hovering/clicking a component shows a description tool
 <div class="arch-diagram">
   <div class="arch-zone arch-zone-browser">
     <h4 class="arch-zone-label">Browser</h4>
-    <button class="arch-component" type="button" data-desc="Injects UI into the web page, reads DOM, captures user actions">
+    <button class="arch-component" type="button">
       <span class="arch-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 13h6M9 17h6"/></svg>
       </span>
       <span>Component A</span>
+      <span class="arch-component-description" hidden>Explain the component with evidence-backed text here.</span>
     </button>
     <!-- more components -->
   </div>
@@ -388,32 +393,37 @@ Show code with a deliberate bug. User clicks the buggy line. Reveal explains the
 <div class="bug-challenge">
   <h3>Find the bug in this code:</h3>
   <div class="bug-code">
-    <button class="bug-line" type="button" data-line="1" data-correct="false" data-hint="Not this line — look for where async timing changes the response.">
+    <button class="bug-line" type="button" data-line="1" data-correct="false">
       <span class="line-num">1</span>
       <code>chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {</code>
+      <span class="bug-hint" hidden>Not this line—look for where asynchronous timing changes the response.</span>
     </button>
-    <button class="bug-line" type="button" data-line="2" data-correct="false" data-hint="This condition is valid. Look at the asynchronous work instead.">
+    <button class="bug-line" type="button" data-line="2" data-correct="false">
       <span class="line-num">2</span>
       <code>  if (msg.action === 'fetchData') {</code>
+      <span class="bug-hint" hidden>This condition is valid. Look at the asynchronous work instead.</span>
     </button>
-    <button class="bug-line bug-target" type="button" data-line="3" data-correct="true" data-explanation="The asynchronous response needs the message channel to remain open. Add return true at the end of the listener.">
+    <button class="bug-line bug-target" type="button" data-line="3" data-correct="true">
       <span class="line-num">3</span>
       <code>    fetch(url).then(r => r.json()).then(data => sendResponse(data));</code>
+      <span class="bug-explanation" hidden>The asynchronous response needs the message channel to remain open. Add return true at the end of the listener.</span>
     </button>
-    <button class="bug-line" type="button" data-line="4" data-correct="false" data-hint="This brace only closes the condition. Look for the missing asynchronous return value.">
+    <button class="bug-line" type="button" data-line="4" data-correct="false">
       <span class="line-num">4</span>
       <code>  }</code>
+      <span class="bug-hint" hidden>This brace only closes the condition. Look for the missing asynchronous return value.</span>
     </button>
-    <button class="bug-line" type="button" data-line="5" data-correct="false" data-hint="This closes the listener. The missing behavior belongs immediately before it.">
+    <button class="bug-line" type="button" data-line="5" data-correct="false">
       <span class="line-num">5</span>
       <code>});</code>
+      <span class="bug-hint" hidden>This closes the listener. The missing behavior belongs immediately before it.</span>
     </button>
   </div>
   <div class="bug-feedback" id="bug-feedback"></div>
 </div>
 ```
 
-`main.js` reads `data-correct`, `data-hint`, and `data-explanation`, then handles focus, disabling, feedback, and recovery automatically.
+`main.js` reads the fixed `data-correct` identifier plus the hidden hint/explanation text nodes, then handles focus, disabling, feedback, and recovery automatically.
 
 ---
 
@@ -565,7 +575,7 @@ The most important accessibility feature for non-technical learners. Any technic
 **HTML — mark up terms inline:**
 ```html
 <p>The extension uses a
-  <button class="term" type="button" data-definition="A service worker is a background script that runs independently of the web page — like a behind-the-scenes assistant that's always on, even when you're not looking at the page.">service worker</button>
+  <button class="term" type="button">service worker<span class="term-definition" hidden>A service worker is a background script that runs independently of the web page.</span></button>
   to handle API calls.
 </p>
 ```
@@ -665,7 +675,8 @@ function positionTooltip(term, tip) {
 document.querySelectorAll('.term').forEach(term => {
   const tip = document.createElement('span');
   tip.className = 'term-tooltip';
-  tip.textContent = term.dataset.definition;
+  tip.textContent = term.querySelector('.term-definition')?.textContent.trim()
+    || 'No definition was provided for this term.';
 
   // Hover for desktop
   term.addEventListener('mouseenter', () => {
