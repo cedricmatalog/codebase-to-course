@@ -8,7 +8,13 @@ These are real problems encountered when building courses. Check every one befor
 Translation blocks use `overflow: hidden` for code wrapping. If tooltips use `position: absolute` inside the term element, they get clipped by the container. **Fix:** Tooltips must use `position: fixed` and be appended to `document.body`. Calculate position from `getBoundingClientRect()`. This is already handled by `main.js` but is the #1 bug that appears in every build.
 
 ### Not Enough Tooltips
-The most common failure is under-tooltipping. Non-technical learners don't know terms like REPL, JSON, flag, entry point, PATH, pip, namespace, function, class, module, PR, E2E, or even software names like Blender/GIMP. **Rule of thumb:** if a term wouldn't appear in everyday conversation with a non-technical friend, tooltip it. Err heavily on the side of too many. BUT: don't tooltip terms the user already knows well from their domain (e.g., AI/ML concepts for someone in AI).
+The most common failure is leaving repository vocabulary unexplained. Always tooltip internal names, domain terms, acronyms, and non-obvious framework concepts. Calibrate general programming terms such as JSON, CLI, module, PR, and E2E to the learner's stated experience; excessive definitions slow experienced developers down.
+
+### Invented Onboarding Commands
+Do not turn a plausible package-manager command into a claimed setup step. Trace every install, run, test, lint, build, and deploy command to a README, manifest, task runner, or CI file. Run safe commands when practical. Clearly mark commands that were found but not executed, and call missing workflows undocumented.
+
+### Missing First Contribution
+A course that ends with only a conceptual recap does not complete onboarding. Recommend one low-risk change grounded in current repository evidence. Name its likely files, validation commands, dependencies, and risks without pretending the work has already been approved by a maintainer.
 
 ### Walls of Text
 The course looks like a textbook instead of an infographic. This happens when you write more than 2-3 sentences in a row without a visual break. Every screen must be at least 50% visual. Convert any list of 3+ items into cards, any sequence into step cards or flow diagrams, any code explanation into a code↔English translation block.
@@ -29,7 +35,7 @@ Using `scroll-snap-type: y mandatory` traps users inside long modules. Always us
 Trying to write all modules in one pass causes later modules to be thin and rushed. Build one module at a time and verify each before moving on. For complex codebases, use the parallel path with module briefs.
 
 ### Missing Interactive Elements
-A module with only text and code blocks, no interactivity. Every module needs at least one of: quiz, data flow animation, group chat, architecture diagram, drag-and-drop. These aren't decorations — they're how non-technical learners actually process information.
+A module with only text and code blocks, no interactivity. Every module needs at least one of: quiz, data flow animation, group chat, architecture diagram, drag-and-drop. Use interactions to teach a decision or trace, not as decoration.
 
 ### Anonymous Course Navigation
 Dots alone communicate progress but not destination. Every nav dot must carry a complete title, and the generated shell's current-module label and searchable Contents panel must remain intact.

@@ -1,92 +1,93 @@
 # Codebase to Course
 
-A Claude Code skill that turns any codebase into a beautiful, interactive single-page HTML course.
+Turn an unfamiliar repository into an interactive developer-onboarding course. New contributors get a practical mental model of the product, architecture, setup, key execution paths, testing and debugging workflow, and a sensible first contribution.
 
-Point it at a repo. Get back a stunning, self-contained course that teaches how the code works — with scroll-based navigation, animated visualizations, embedded quizzes, and code-with-plain-English side-by-side translations.
+## Quick start
 
-## Who is this for?
+Install globally with the open agent-skills CLI:
 
-**"Vibe coders"** — people who build software by instructing AI coding tools in natural language, without a traditional CS education.
-
-You've built something (or found something cool on GitHub). It works. But you don't really understand *how* it works under the hood. This skill generates a course that teaches you — not by lecturing, but by tracing what happens when you actually use the app.
-
-**Your goals are practical, not academic:**
-- Steer AI coding tools better (make smarter architectural decisions)
-- Detect when AI is wrong (spot hallucinations, catch bad patterns)
-- Debug when AI gets stuck (break out of bug loops)
-- Talk to engineers without feeling lost
-
-You're not trying to become a software engineer. You want coding as a superpower.
-
-## What the course looks like
-
-The output is a small, portable course directory (`index.html`, `styles.css`, and `main.js`) with no install or server required. Course content and interactivity work offline; the branded web fonts enhance the page when a connection is available. It includes:
-
-- **Scroll-based modules** with progress tracking and keyboard navigation
-- **Code ↔ Plain English translations** — real code on the left, what it means on the right
-<img width="720" alt="Code translation block" src="https://github.com/user-attachments/assets/fb9e7fac-05c1-4f98-b80c-46543ef81afc" />
-
-- **Animated visualizations** — data flow animations, group chat between components, architecture diagrams
-<img width="720" alt="Animated data flow" src="https://github.com/user-attachments/assets/20fb403e-7dfd-4a47-989b-bbae86ca8041" />
-
-- **Interactive quizzes** that test *application* not memorization ("You want to add favorites — which files change?")
-<img width="720" alt="Interactive quiz" src="https://github.com/user-attachments/assets/57706496-9fa8-457a-8450-3da22789951c" />
-
-- **Glossary tooltips** — hover any technical term for a plain-English definition
-<img width="720" alt="Glossary tooltip" src="https://github.com/user-attachments/assets/ac2f160a-d73f-4779-97b2-a06fdb5f3227" />
-
-  
-- **Warm, distinctive design** — not the typical purple-gradient AI look
-
-## How to use
-
-### As a Claude Code skill
-
-1. Copy the `codebase-to-course` folder into `~/.claude/skills/`
-2. Open any project in Claude Code
-3. Say: *"Turn this codebase into an interactive course"*
-
-### Trigger phrases
-
-- "Turn this into a course"
-- "Explain this codebase interactively"
-- "Make a course from this project"
-- "Teach me how this code works"
-- "Interactive tutorial from this code"
-
-## Design philosophy
-
-### Build first, understand later
-
-This inverts traditional CS education. The old way: memorize concepts for years → eventually build something → finally see the point (most people quit before step 3). This way: **build something → experience it working → now understand how it works.**
-
-### Show, don't tell
-
-Every screen is at least 50% visual. Max 2-3 sentences per text block. If something can be a diagram, animation, or interactive element — it shouldn't be a paragraph.
-
-### Quizzes test doing, not knowing
-
-No "What does API stand for?" Instead: "A user reports stale data after switching pages. Where would you look first?" Quizzes test whether you can *use* what you learned to solve a new problem.
-
-### No recycled metaphors
-
-Each concept gets a metaphor that fits *that specific idea*. A database is a library with a card catalog. Auth is a bouncer checking IDs. API rate limiting is a nightclub with a capacity limit. Never the same metaphor twice.
-
-### Original code only
-
-Code snippets are exact copies from the real codebase — never modified or simplified. The learner should be able to open the actual file and see the same code they learned from.
-
-## Skill structure
-
-```
-codebase-to-course/
-├── SKILL.md                          # Main skill instructions
-└── references/
-    ├── design-system.md              # CSS tokens, typography, colors, layout
-    └── interactive-elements.md       # Quiz, animation, and visualization patterns
+```bash
+npx skills add cedricmatalog/codebase-to-course -g
 ```
 
+For a non-interactive install, choose your agent:
+
+```bash
+# Codex
+npx skills add cedricmatalog/codebase-to-course -g -a codex -y
+
+# Claude Code
+npx skills add cedricmatalog/codebase-to-course -g -a claude-code -y
+```
+
+Then open your coding agent inside the repository you want to learn and paste:
+
+```text
+Use the codebase-to-course skill to create an interactive developer onboarding
+course for this repository. Focus on setup, architecture, one key request flow,
+testing and debugging, and a first safe contribution.
+```
+
+That is the complete setup. The generated course runs locally in a browser without a server.
+
+## Other ways to start
+
+```text
+Turn this repository into a developer onboarding course.
+
+Create an interactive architecture walkthrough for ./path/to/project.
+
+Onboard me to https://github.com/owner/repository and show me where to make my first change.
+```
+
+## What developers learn
+
+- How to install and run the project using commands found in the repository
+- What the major components own and how they communicate
+- How one real user action travels through the system
+- Where external services, databases, queues, and APIs enter the flow
+- How to test, debug, and validate a change
+- Which small first contribution is safe and valuable
+
+The course distinguishes verified facts from inferred behavior and links explanations to real files and code. It never invents undocumented setup commands or secret values.
+
+## What gets generated
+
+The result is a portable course directory:
+
+```text
+project-onboarding/
+├── index.html      # Open this in a browser
+├── styles.css
+├── main.js
+└── modules/       # Focused onboarding lessons
+```
+
+It includes scroll-based navigation, architecture and data-flow visualizations, real code with intent explanations, scenario-based exercises, glossary tooltips, progress saving, keyboard navigation, and responsive layouts.
+
+## Installation options
+
+The default install is project-local. Add `-g` to make the skill available in every repository:
+
+```bash
+# Install only in the current project
+npx skills add cedricmatalog/codebase-to-course
+
+# Preview what the repository exposes without installing
+npx skills add cedricmatalog/codebase-to-course --list
+
+# Update a global installation later
+npx skills update codebase-to-course -g
+```
+
+The installer supports Codex, Claude Code, Cursor, OpenCode, and many other coding agents. Node.js is required only to run the installer; generated courses have no build or runtime dependency.
+
+## Why this format works
+
+Developer onboarding usually scatters knowledge across a README, source files, configuration, conversations, and unwritten conventions. This skill organizes that evidence around practical tasks: get the project running, trace a feature, locate the right ownership boundary, diagnose a failure, and make a first change.
+
+Every course remains grounded in the source repository. Code excerpts are copied exactly, file paths are explicit, and uncertainty is labeled instead of guessed.
 
 ---
 
-Built by [Zara](https://x.com/zarazhangrui) with Claude Code.
+Originally created by [Zara Zhang](https://github.com/zarazhangrui/codebase-to-course). This fork adds a portable course runtime, accessibility and interaction improvements, validation tooling, and a developer-onboarding workflow.

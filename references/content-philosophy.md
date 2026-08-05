@@ -26,7 +26,7 @@ People's eyes glaze over text blocks. The course should feel closer to an infogr
 - Every module should have at least one "hero visual" — a diagram, animation, or interactive element that dominates the screen and teaches the core concept at a glance
 
 ### Code ↔ English Translations
-Every code snippet gets a side-by-side plain English translation. Left panel: real code from the project with syntax highlighting. Right panel: line-by-line plain English explaining what each line does. This is the single most valuable teaching tool for non-technical learners.
+Every code snippet gets a side-by-side intent translation. Left panel: real code from the project with syntax highlighting. Right panel: explain what each line does, why it exists here, and what behavior or boundary it affects. For experienced developers, prioritize repository-specific intent over basic syntax; for junior or non-technical learners, add the necessary foundations.
 
 **Preserve the real code shape.** Code blocks use their natural indentation and allow contained horizontal scrolling when a line is genuinely long. Choose naturally short 5–10-line excerpts, and never force mid-token wrapping that makes the snippet look different from the source file.
 
@@ -47,16 +47,16 @@ Follow what actually happens when the learner does something they already do eve
 Use "aha!" callout boxes for universal CS insights. Use humor where natural (not forced). Give components personality — they're "characters" in a story, not abstract boxes on a diagram.
 
 ### Glossary Tooltips — No Term Left Behind
-Every technical term (API, DOM, callback, middleware, etc.) gets a dashed-underline tooltip on first use in each module. Hover on desktop or tap on mobile to see a 1-2 sentence plain-English definition. The learner should never have to leave the page to Google a term. This is the difference between a course that *says* it's for non-technical people and one that actually *is*.
+Every repository-specific, domain-specific, or potentially unfamiliar term gets a dashed-underline tooltip on first use in each module. Hover on desktop or tap on mobile to see a 1-2 sentence plain-English definition. The learner should not need to leave the course to understand the project's vocabulary.
 
-**Be extremely aggressive with tooltips.** If there is even a 1% chance a non-technical person doesn't know a word, tooltip it. This includes:
+**Calibrate tooltips to the learner.** Always define project names, domain language, internal abbreviations, and non-obvious framework behavior. Define general programming terms when the learner is junior or non-technical. This includes:
 - Software names they might not know (Blender, GIMP, Audacity, etc.)
 - Everyday developer terms (REPL, JSON, flag, CLI, API, SDK, etc.)
 - Programming concepts (function, variable, dictionary, class, module, etc.)
 - Infrastructure terms (PATH, pip, namespace, entry point, etc.)
 - Acronyms — ALWAYS tooltip acronyms on first use
 
-**The vocabulary IS the learning.** One of the key goals is for learners to acquire the precise technical vocabulary they need to communicate with AI coding agents. Each tooltip should teach the term in a way that helps the learner USE it in their own instructions — e.g., "A **flag** is an option you add to a command to change its behavior — like adding '--json' to get structured data instead of plain text. When talking to AI, you'd say 'add a flag for verbose output.'"
+**Repository vocabulary is part of onboarding.** Each tooltip should teach the term in a way that helps the learner use it in code review, debugging, and instructions to an AI coding agent. Prefer the meaning the term has in this repository over a generic dictionary definition.
 
 **Cursor:** Use `cursor: pointer` on terms (not `cursor: help`). The question-mark cursor feels clinical — a pointer feels clickable and inviting.
 

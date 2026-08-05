@@ -1,50 +1,47 @@
 ---
 name: codebase-to-course
-description: "Turn any codebase into a beautiful, interactive single-page HTML course that teaches how the code works to non-technical people. Use this skill whenever someone wants to create an interactive course, tutorial, or educational walkthrough from a codebase or project. Also trigger when users mention 'turn this into a course,' 'explain this codebase interactively,' 'teach this code,' 'interactive tutorial from code,' 'codebase walkthrough,' 'learn from this codebase,' or 'make a course from this project.' This skill produces a stunning, self-contained HTML file with scroll-based navigation, animated visualizations, embedded quizzes, and code-with-plain-English side-by-side translations."
+description: "Turn an unfamiliar codebase into an interactive developer-onboarding course that accelerates a new contributor's first confident change. Use when someone asks to onboard a developer, explain a repository or architecture, trace a feature or data flow, create a codebase walkthrough, or make an interactive course or tutorial from a local project or GitHub repository. Produces a portable browser-based course covering setup, system boundaries, real execution paths, testing, debugging, and a first contribution, with source-grounded code explanations, visualizations, and exercises."
 ---
 
 # Codebase-to-Course
 
-Transform any codebase into a stunning, interactive course. The output is a **directory** containing a pre-built `styles.css`, `main.js`, per-module HTML files, and an assembled `index.html` — open it directly in the browser with no setup required (only external dependency: Google Fonts CDN). The course teaches how the code works through scroll-based modules, animated visualizations, embedded quizzes, and plain-English translations of code.
+Transform any codebase into a source-grounded, interactive developer-onboarding course. The output is a **directory** containing a pre-built `styles.css`, `main.js`, per-module HTML files, and an assembled `index.html` — open it directly in the browser with no setup required (only external dependency: Google Fonts CDN). The course helps a new contributor get the project running, understand its architecture, trace a real execution path, debug failures, and identify a safe first change.
 
 ## First-Run Welcome
 
 When the skill is first triggered and the user hasn't specified a codebase yet, introduce yourself and explain what you do:
 
-> **I can turn any codebase into an interactive course that teaches how it works — no coding knowledge required.**
+> **I can turn any codebase into an interactive onboarding course that helps a developer become productive faster.**
 >
 > Just point me at a project:
-> - **A local folder** — e.g., "turn ./my-project into a course"
-> - **A GitHub link** — e.g., "make a course from https://github.com/user/repo"
-> - **The current project** — if you're already in a codebase, just say "turn this into a course"
+> - **The current project** — "onboard me to this repository"
+> - **A local folder** — "create an onboarding course for ./my-project"
+> - **A GitHub link** — "onboard me to https://github.com/user/repo"
 >
-> I'll read through the code, figure out how everything fits together, and generate a beautiful single-page HTML course with animated diagrams, plain-English code explanations, and interactive quizzes. The whole thing runs in your browser — no setup needed.
+> I'll trace the architecture and a real feature through the source, extract the documented setup and test workflow, and generate a browser-based course with diagrams, code explanations, debugging exercises, and a useful first contribution.
 
 If the user provides a GitHub link, clone the repo first (`git clone <url> /tmp/<repo-name>`) before starting the analysis. If they say "this codebase" or similar, use the current working directory.
 
 ## Who This Is For
 
-The target learner is a **"vibe coder"** — someone who builds software by instructing AI coding tools in natural language, without a traditional CS education. They may have built this project themselves (without looking at the code), or they may have found an interesting open-source project on GitHub and want to understand how it's built. Either way, they don't yet understand what's happening under the hood.
+The primary learner is a **developer joining an unfamiliar codebase**: a new hire, an internal transfer, an open-source contributor, or an engineer moving across the stack. They know general programming concepts but do not yet know this repository's product language, boundaries, conventions, or failure modes.
 
-**Assume zero technical background.** Every CS concept — from variables to APIs to databases — needs to be explained in plain language as if the learner has never encountered it. No jargon without definition. No "as you probably know." The tone should be like a smart friend explaining things, not a professor lecturing.
+Calibrate explanations to the user's experience. By default, explain repository-specific terms and non-obvious framework behavior without reteaching basic syntax. If the user identifies as junior or non-technical, add more foundational definitions. Never assume familiarity with the project's domain or use "as you probably know."
 
-**Their goals are practical, not academic:**
-- Have enough technical knowledge to effectively **steer AI coding tools** — make better architectural and tech stack decisions
-- **Detect when AI is wrong** — spot hallucinations, catch bad patterns, know when something smells off
-- **Intervene when AI gets stuck** — break out of bug loops, debug issues, unblock themselves
-- Build more advanced software with **production-level quality and reliability**
-- Be **technically fluent** enough to discuss decisions with engineers confidently
-- **Acquire the vocabulary of software** — learn the precise technical terms so they can describe requirements clearly and unambiguously to AI coding agents (e.g., knowing to say "namespace package" instead of "shared folder thing")
-
-**They are NOT trying to become software engineers.** They want coding as a superpower that amplifies what they're already good at. They don't need to write code from scratch — they need to *read* it, *understand* it, and *direct* it.
+**Their goals are operational:**
+- Get the project running without guessing at prerequisites or commands
+- Build a reliable mental model of components and ownership boundaries
+- Trace a real feature from entry point to side effects
+- Know where to add a change and which tests should protect it
+- Recognize logs, failure modes, and debugging entry points
+- Make a small first contribution with confidence
+- Use precise repository vocabulary when collaborating with people or AI coding agents
 
 ## Why This Approach Works
 
-This skill inverts traditional CS education. The old model is: memorize concepts for years → eventually build something → finally see the point (most people quit before step 3). This model is: **build something first → experience it working → now understand how it works.**
+Developer onboarding is fastest when it begins with a real product behavior, follows that behavior through the architecture, and ends with a change the learner can make. The course turns scattered repository evidence into that guided path.
 
-The learner already has context that traditional students don't — they've *used* the app, they know what it does, they may have even described its features in natural language. The course meets them where they are: "You know that button you click? Here's what happens under the hood when you click it."
-
-Every module answers **"why should I care?"** before "how does it work?" The answer to "why should I care?" is always practical: *because this knowledge helps you steer AI better, debug faster, or make smarter architectural decisions.*
+Every module answers **"what will this help me do?"** before diving into implementation. Prefer operational knowledge over exhaustive documentation: how to run, trace, change, test, debug, and ship this system.
 
 The directory-based output is intentional: separating CSS/JS from content means AI never regenerates boilerplate, each module is written independently (keeping output size small and quality high), and the assembled course works locally with zero setup. Course content and interactivity work offline; web fonts are progressive enhancement.
 
@@ -57,36 +54,50 @@ The directory-based output is intentional: separating CSS/JS from content means 
 Before writing course HTML, deeply understand the codebase. Read all the key files, trace the data flows, identify the "cast of characters" (main components/modules), and map how they communicate. Thoroughness here pays off — the more you understand, the better the course.
 
 **What to extract:**
+- The documented prerequisites, package manager, install/run/build/lint/test commands, and where each command is defined
+- Required environment variable **names** and their purpose; never expose or invent secret values
+- The repository map: applications, packages, services, generated code, migrations, tests, infrastructure, and ownership boundaries
 - The main "actors" (components, services, modules) and their responsibilities
 - The primary user journey (what happens when someone uses the app end-to-end)
 - The exact entry action and source file that will anchor the course opening
 - Key APIs, data flows, and communication patterns
 - Clever engineering patterns (caching, lazy loading, error handling, etc.)
-- Real bugs or gotchas (if visible in git history or comments)
+- The test strategy, debugging entry points, logging/observability surfaces, and common failure modes
+- The build, CI, release, and deployment path when repository evidence exists
+- Real bugs, hazards, or gotchas visible in documentation, configuration, history, or comments
 - The tech stack and why each piece was chosen
-- Three concrete capabilities for the final recap and one repository-specific prompt the learner can try next
+- A small, low-risk first contribution grounded in the repository's current structure
+- Three concrete capabilities for the final recap and one repository-specific first-contribution prompt
+
+Treat every onboarding claim as **verified**, **inferred**, or **undocumented**. Verify commands against manifests, task runners, CI files, and documentation. Run safe setup or validation commands when practical. If a command cannot be tested, label it as unverified instead of presenting it as guaranteed. Never invent a missing workflow.
 
 **Figure out what the app does yourself** by reading the README, the main entry points, and the UI code. Don't ask the user to explain the product — they may not be familiar with it either. The course should open by explaining what the app does in plain language (a brief "here's what this thing does and why it's interesting") before diving into how it works. The first module should start with a concrete user action — "imagine you paste a YouTube URL and click Analyze — here's what happens under the hood."
 
 ### Phase 2: Curriculum Design
 
-Structure the course as **4-6 modules**. Most courses need 4-6. Only go to 7-8 if the codebase genuinely has that many distinct concepts worth teaching. Fewer, better modules beat more, thinner ones.
+Structure the course as **4-6 modules**. Most onboarding courses need 4-6. Only go to 7-8 if the codebase genuinely has that many distinct operational concepts. Fewer, better modules beat more, thinner ones.
 
 The arc always starts from what the learner already knows (the user-facing behavior) and moves toward what they don't (the code underneath). Think of it as zooming in: start wide with the experience, then progressively peel back layers.
 
-| Module Position | Purpose | Why it matters for a vibe coder |
+| Module Position | Purpose | Developer outcome |
 |---|---|---|
-| 1 | "Here's what this app does — and what happens when you use it" | Start with the product (what it does, why it's interesting), then trace a core user action into the code. Grounds everything in something concrete. |
-| 2 | Meet the actors | Know which components exist so you can tell AI "put this logic in X, not Y" |
-| 3 | How the pieces talk | Understand data flow so you can debug "it's not showing up" problems |
-| 4 | The outside world (APIs, databases) | Know what's external so you can evaluate costs, rate limits, and failure modes |
-| 5 | The clever tricks | Learn patterns (caching, chunking, error handling) so you can request them from AI |
-| 6 | When things break | Build debugging intuition so you can escape AI bug loops |
-| 7 | The big picture | See the full architecture so you can make better decisions about what to build next |
+| 1 | Product and first trace | Explain what the system does and follow one real action to its source entry point. |
+| 2 | Get it running | Understand prerequisites, configuration, local services, and verified development commands. |
+| 3 | System map and boundaries | Know which applications, packages, services, and external systems own each responsibility. |
+| 4 | One feature end to end | Trace data, control flow, persistence, and failure handling across boundaries. |
+| 5 | Change, test, and debug | Locate the right extension point, select relevant tests, and start diagnosis from observable evidence. |
+| 6 | First contribution and delivery | Make a low-risk change and understand how it reaches CI, review, and deployment. |
 
 This is a **menu, not a checklist**. Pick the modules that serve the codebase — a simple CLI tool needs 4, not 7. Adapt the arc to the codebase's complexity.
 
-**The key principle:** Every module should connect back to a practical skill — steering AI, debugging, making decisions. If a module doesn't help the learner DO something better, cut it or reframe it until it does.
+**The key principle:** Every module should move the developer closer to a confident contribution. If a module does not help them run, locate, trace, change, test, debug, or deliver something, cut it or reframe it.
+
+**Every completed course must provide these onboarding anchors:**
+- A copyable setup/run path sourced from repository evidence, with unverified steps labeled
+- A visual system map showing boundaries and external dependencies
+- One end-to-end trace tied to exact files and code excerpts
+- A change/test/debug loop that names the relevant commands and evidence surfaces
+- A first-contribution recommendation with scope, likely files, validation steps, and risks
 
 **Each module should contain:**
 - 3-6 screens (sub-sections that flow within the module)
@@ -100,7 +111,7 @@ This is a **menu, not a checklist**. Pick the modules that serve the codebase �
 - **Message Flow / Data Flow Animation** — at least one across the course. The step-by-step packet animation between actors. If the codebase has any kind of request/response, data pipeline, or multi-step process, animate it. Every codebase has data flowing somewhere — find it.
 - **Code ↔ English Translation Blocks** — at least one per module (already required above, but reiterating: this is non-negotiable).
 - **Quizzes** — at least one per module (multiple-choice, scenario, drag-and-drop, or spot-the-bug — any quiz type counts).
-- **Glossary Tooltips** — on every technical term, first use per module.
+- **Glossary Tooltips** — on every repository-specific, domain-specific, or potentially unfamiliar term at first use per module. Calibrate common programming terms to the learner's stated level.
 
 These five element types are the backbone of every course. Other interactive elements (architecture diagrams, layer toggles, pattern cards, etc.) are optional and should be added when they fit. But the five above must ALWAYS be present — no exceptions.
 
@@ -157,9 +168,9 @@ course-name/
 - `ENTRY_ACTION` and `ENTRY_FILE` → a real user action and the exact source path where its code trail begins
 - The four `ACCENT_*` placeholders → one complete palette from `_base.html`; do not mix palettes
 - `NAV_DOTS` → one `<button class="nav-dot" type="button" data-target="module-N" data-tooltip="FULL_MODULE_TITLE" aria-label="Module N: FULL_MODULE_TITLE"></button>` per module
-- `COMPLETION_SUMMARY` → a factual recap of the architecture the learner just traced
-- `TAKEAWAY_1`, `TAKEAWAY_2`, and `TAKEAWAY_3` → concrete capabilities, written as actions the learner can now perform
-- `NEXT_PROMPT` → a useful prompt tied to this repository that the learner can paste into an AI coding tool
+- `COMPLETION_SUMMARY` → a factual recap of the architecture and development workflow the learner just traced
+- `TAKEAWAY_1`, `TAKEAWAY_2`, and `TAKEAWAY_3` → concrete developer capabilities, written as actions the learner can now perform
+- `NEXT_PROMPT` → a scoped first-contribution prompt tied to this repository, including likely files and validation expectations
 
 The opening action/path and the closing prompt are mandatory codebase fingerprints, not decorative copy. They must change for every source repository.
 
@@ -200,7 +211,7 @@ This produces `index.html`. Open it in the browser.
 
 ### Phase 4: Review and Open
 
-After running `build.sh`, open `index.html` in the browser. Walk the user through what was built and ask for feedback on content, design, and interactivity.
+After running `build.sh`, open `index.html` in the browser. Tell the user the exact output path, summarize the verified setup command, key trace, and recommended first contribution, then ask for feedback on accuracy, usefulness, design, and interactivity.
 
 Review the complete path at desktop and mobile widths. Use keyboard-only navigation for every quiz, tooltip, diagram, layer switcher, bug challenge, and matching exercise. Confirm that Contents names every module, Play all can pause, malformed widget data shows a readable fallback, saved progress can be resumed or cleared, and the final recap contains no unresolved placeholders.
 

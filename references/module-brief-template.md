@@ -10,7 +10,8 @@
 - **Metaphor:** [A fresh, specific metaphor — never "restaurant." See `references/content-philosophy.md` > Metaphors First]
 - **Opening hook:** [1 sentence that connects to something the learner already knows from using the app]
 - **Key insight:** [The one thing the learner should walk away understanding]
-- **"Why should I care?":** [How this helps them steer AI / debug / make decisions]
+- **Developer outcome:** [How this helps them run / locate / trace / change / test / debug / deliver]
+- **Evidence status:** [Which claims are verified, inferred, unverified, or undocumented]
 
 ### Code Snippets (pre-extracted)
 
@@ -21,6 +22,12 @@ File: src/example/file.ts (lines 12-24)
 
 File: src/another/file.ts (lines 45-52)
 [paste actual code here]
+
+### Onboarding Actions
+
+- **Command or workflow:** [Exact command/path grounded in README, manifest, task runner, or CI]
+- **Verification:** [Executed successfully / found but not executed / undocumented]
+- **First-contribution connection:** [How this module prepares the learner for a safe initial change]
 
 ### Interactive Elements
 
