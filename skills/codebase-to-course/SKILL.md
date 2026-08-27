@@ -111,13 +111,23 @@ Read enough of each entry to say what it is, what it owns, and how it relates to
 - what "it is running" looks like: the port or URL, the ready line in the output, and the first thing to check when nothing appears
 - recorded rationale, from architecture decision records, design documents, changelogs, commit messages, and merge-commit or pull-request descriptions reachable through read-only Git history — the only evidence that can make a "why" claim `verified`
 - required environment-variable names and purposes, without reading values
+- what must already exist for the system to run: databases, message queues, caches, object stores, external APIs, and third-party services it calls out to, each established from the client, connection string, or configuration that reaches it rather than from a name in a document
+- which of those a local run genuinely needs, which are stubbed or containerised for development, and which have no local substitute at all — the difference between an afternoon of setup and a blocked first day
+- which environments exist and which one a local run talks to, from configuration files, container definitions, CI workflows, and environment examples; note where behaviour differs between them
 - the complete repository map and ownership boundaries, including subsystems the primary path never touches
+- the runtime and dependency surface: language and runtime versions from manifests, and each direct third-party dependency that shapes the architecture, with the role it plays established from where the repository actually imports it rather than from the package's own marketing
+- which dependencies are runtime and which are development-only, since a newcomer who cannot tell them apart cannot tell what ships
+- the internal dependency graph: which of the repository's own modules, packages, or workspaces import which, which direction each dependency runs, and which boundaries are deliberately one-way
 - the dominant entry action and exact source entry point
 - the primary control/data flow end to end, including failures and side effects
+- where two ways of doing the same thing coexist: a pattern being migrated away from beside the one replacing it, a deprecated module still imported, a compatibility shim, a half-finished rename. Name which is current and which is being retired, and cite what settles it
 - every other significant entry point — additional commands, routes, jobs, event handlers, public API surfaces — named and placed, even when only the primary one is traced line by line
+- how identity and permission work, when the repository has them: where a request is authenticated, where authorisation is decided, and what distinguishes the roles or scopes the code actually checks
+- where state lives, when the repository has any: the persistent stores, the entities they hold, and the file that defines the schema or model — connecting the domain vocabulary to the place it is written down
 - test strategy, debugging entry points, logs or observability surfaces
 - CI, release, or deployment boundaries only when repository evidence exists
 - configuration, migration, and generated-artifact boundaries when they exist, including which directories hold build output that is regenerated rather than hand-edited
+- where a new thing goes: the placement convention for an additional endpoint, command, test, component, or migration, inferred from where the existing ones live and from any structure the documentation states. This is what carries a newcomer from their first change to their tenth
 - the contribution conventions this team expects: `CONTRIBUTING`, `CODEOWNERS`, pull-request and issue templates, commit or branch conventions, review expectations, and where a newcomer is told to ask questions
 - one low-risk first-contribution candidate with likely files, validation steps, dependencies, and risks
 
@@ -151,12 +161,12 @@ Every substantive onboarding claim must be `verified`, `inferred`, `unverified`,
 
 Start from these six modules, at roughly 2–4 screens each:
 
-1. What this system does, who uses it, the vocabulary you will hear, and the full repository map
-2. How to get it running, and how you know a change took effect: configuration, environment, the edit-to-result loop, and where output appears
-3. The primary path end to end, its failures, and side effects
+1. What this system does, who uses it, the vocabulary you will hear, the full repository map, how its parts depend on each other, and where state lives
+2. How to get it running, and how you know a change took effect: what must already exist, which environment a local run talks to, the edit-to-result loop, and where output appears
+3. The primary path end to end, including identity, permission, outbound calls, failures, and side effects
 4. Testing and debugging evidence
 5. Delivery, release, or deployment boundaries, when repository evidence exists
-6. How this team expects changes to be made, and a first low-risk change with its validation steps and the signal that proves it worked
+6. Where a new thing goes, how this team expects changes to be made, and a first low-risk change with its validation steps and the signal that proves it worked
 
 Then reconcile against the Phase 1 coverage checklist. A subsystem the six modules never mention needs a home: a screen inside the module that owns its boundary, or a module of its own when it is a genuinely separate operational surface — a second service, a worker, a client SDK, an infrastructure workspace. Repositories with many boundaries run past six modules, and that is correct.
 

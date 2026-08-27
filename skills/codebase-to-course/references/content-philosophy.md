@@ -16,7 +16,7 @@ A course starts from six modules of 2–4 short screens and grows to cover every
 
 Each screen teaches one idea or supports one decision. Prefer 1–3 short paragraphs, one exact excerpt, one focused diagram, or one compact checklist. Split genuinely separate outcomes; do not split merely to increase screen count.
 
-Visuals are optional. Use one when a relationship, boundary, mapping, or sequence is materially clearer than prose. A list does not automatically need cards, and a component exchange does not automatically need animation.
+Visuals are optional. Use one when a relationship, boundary, mapping, or sequence is materially clearer than prose. A dependency graph is the usual case where one earns its place: which parts depend on which, and in which direction, is genuinely harder to hold from a paragraph than from a diagram. A list does not automatically need cards, and a component exchange does not automatically need animation.
 
 ## Match the repository class
 
@@ -30,6 +30,8 @@ Anchor content to the dominant repository class:
 - data: an input-to-output transformation
 
 Do not invent UI behavior for a library or a customer journey for infrastructure. In mixed repositories, state which boundary the course follows and what remains out of scope.
+
+When a repository contains two ways of doing the same thing, teaching is a choice about which one the learner will copy. Teach the current pattern, name the one being retired so it is recognisable when they meet it, and be explicit about how confident that reading is.
 
 ## Code and evidence
 

@@ -330,7 +330,7 @@ Step-by-step visualization of data moving between components. User clicks "Next 
 
 ## Interactive Architecture Diagram
 
-Full-system diagram where hovering/clicking a component shows a description tooltip.
+Full-system diagram where hovering/clicking a component shows a description tooltip. This is the natural home for the internal dependency graph: one component per module, package, or workspace, with each description naming what it depends on and what depends on it.
 
 **HTML:**
 ```html

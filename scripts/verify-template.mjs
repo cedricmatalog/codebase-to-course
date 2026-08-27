@@ -77,6 +77,9 @@ const modules = [
         <div class="chat-typing" hidden><div class="chat-avatar" id="chat-module2-typing-avatar">S</div><div class="chat-typing-dots" aria-label="Message incoming"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>
         <div class="chat-controls"><button class="btn chat-next-btn" type="button">Next message</button><button class="btn chat-all-btn" type="button" aria-pressed="false">Play all</button><button class="btn chat-reset-btn" type="button">Replay</button><span class="chat-progress"></span></div>
       </div>
+      <div class="badge-list">
+        <div class="badge-item"><code class="badge-code">npx playwright install chromium</code><span class="badge-desc">Browser binary, not installed by npm ci</span></div>
+      </div>
       <details class="practice-extra">
         <summary>Optional · Compare the shared files</summary>
         <p class="activity-instruction"><strong>Do this next:</strong> choose either shared course file to see the job it owns.</p>
@@ -151,7 +154,7 @@ try {
     schema_version: 1,
     generator: 'codebase-to-course',
     generator_version: '1.0.0',
-    generator_revision: 'fixture-generator-revision',
+    generator_revision: 'fedcba9876543210fedcba9876543210fedcba98',
     canonical_source: 'https://github.com/example/codebase-to-course',
     source_kind: 'github-clone',
     source_revision: sourceRevision,

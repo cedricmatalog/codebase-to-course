@@ -1,0 +1,44 @@
+<section class="module" id="module-5">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-stage">Contribute</span>
+      <span class="module-number" aria-hidden="true">05</span>
+      <h2 class="module-title">Make your first change</h2>
+    </header>
+    <div class="module-body">
+    <section class="screen animate-in">
+      <h3 class="screen-heading">Two guards you will meet in review</h3>
+      <p data-claim-id="C-006">A published course can be checked against a moved repository, and the checker fails loudly rather than quietly.</p>
+      <div class="translation-block">
+        <div class="translation-code"><span class="translation-label">CODE</span><pre><code><span class="code-line">if (stale.length === 0) {</span>
+<span class="code-line">  process.stdout.write('Every cited excerpt still matches the repository. The course is current.\n');</span>
+<span class="code-line">  process.exitCode = 0;</span>
+<span class="code-line">} else {</span></code></pre></div>
+        <div class="translation-english"><span class="translation-label">PLAIN ENGLISH</span><div class="translation-lines"><p class="tl">If nothing drifted, say so and succeed.</p><p class="tl">Otherwise exit non-zero so CI or a schedule notices.</p></div></div>
+      </div>
+      <p class="source-note">Source: <code>skills/codebase-to-course/scripts/check-staleness.mjs:75–78</code> · at <code>d8401cc</code></p>
+      <p data-claim-id="C-008">Continuous integration installs the skill into a clean directory and fails if anything unexpected appears at its top level, so maintainer tooling can never leak into the shipped payload.</p>
+      <div class="translation-block">
+        <div class="translation-code"><span class="translation-label">CODE</span><pre><code><span class="code-line">          unexpected="$(find "$skill_dir" -mindepth 1 -maxdepth 1 \</span>
+<span class="code-line">            ! -name SKILL.md ! -name agents ! -name references ! -name scripts -print)"</span>
+<span class="code-line">          if test -n "$unexpected"; then</span>
+<span class="code-line">            echo "Unexpected top-level files leaked into the skill payload:" &gt;&amp;2</span>
+<span class="code-line">            printf '%s\n' "$unexpected" &gt;&amp;2</span></code></pre></div>
+        <div class="translation-english"><span class="translation-label">PLAIN ENGLISH</span><div class="translation-lines"><p class="tl">Install the skill somewhere clean.</p><p class="tl">List anything that is not one of the four allowed entries.</p><p class="tl">Fail the build if that list is not empty.</p></div></div>
+      </div>
+      <p class="source-note">Source: <code>.github/workflows/validate.yml:57–61</code> · at <code>d8401cc</code></p>
+    </section>
+    <section class="screen animate-in">
+      <h3 class="screen-heading">A real gap you could close</h3>
+      <p data-claim-id="C-012">The evaluation guide asks for results across model tiers, but no results are recorded anywhere in the repository.</p>
+      <p class="source-note">Undocumented: <code>evaluations/README.md:25–26</code> · at <code>d8401cc</code></p>
+      <div class="step-cards">
+        <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Run one evaluation</strong><p>Pick a scenario in <code>evaluations/</code>, run it against a real repository, and grade it against its expected_behavior list.</p></div></div>
+        <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Record what happened</strong><p>Add a results file next to the scenarios noting the model, the date, and every expectation that failed.</p></div></div>
+        <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Validate</strong><p>Run <code>npm test</code>. The suite already checks that evaluation files are well formed.</p></div></div>
+      </div>
+      <p><strong>Risks and unknowns:</strong> grading is human judgement, so a recorded pass is weaker evidence than a passing test. No maintainer has approved this work; it is a recommendation drawn from the repository’s own release checklist, not an assigned task.</p>
+    </section>
+    </div>
+  </div>
+</section>

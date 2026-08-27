@@ -79,6 +79,12 @@ A module-level “verified” label cannot make every sentence verified. Status 
 
 ## Repository fit
 
+### Dependency list mistaken for architecture
+
+Pasting the dependency manifest is not explaining the architecture. What a newcomer needs is the shape: which few dependencies determine how the system is built, where each one enters the code, and how the repository's own modules depend on each other. Teach the graph and the direction of its edges, not an inventory.
+
+Never enumerate transitive dependencies from a lockfile — that is machine data, not a mental model — and never explain why a dependency was chosen unless a source records the reason.
+
 ### App-shaped assumptions
 
 Not every repository has a UI or customer journey. Classify it as application, service, CLI, library, infrastructure, data, or mixed before choosing an entry point. Use an API call, command, public function, plan, event, or transformation when that is the real operational anchor.
@@ -90,6 +96,20 @@ A course that teaches the primary path well and never mentions the other half of
 ### Absence reported as silence
 
 A repository with no tests, no CI, or no deployment path has told you something. Record it as `undocumented` with the evidence that establishes the absence, and say so in the course. Omitting the module entirely leaves the learner unable to tell an absent workflow from an unexamined one.
+
+### Deprecated path taught as current
+
+The most damaging thing a course can do is teach the pattern the team is migrating away from. Two ways to do the same thing is the normal state of a real codebase, and a newcomer copies whichever one they saw first — so the course decides which one they copy.
+
+The evidence contract will not catch this on its own: deprecated code genuinely exists and its excerpt genuinely matches. Look for the signals — a deprecation comment, a compatibility shim, a module imported only by old callers, a rename that stopped halfway, a changelog or commit describing the direction of travel — and say which pattern is current. Absent an explicit statement, "this appears to be the newer pattern" is `inferred`, not `verified`, and the course says so.
+
+### Unrunnable without saying so
+
+A setup section that lists commands but never says the system needs a database, a queue, a VPN, or a staging credential has not explained how to run anything. Establish what must already exist, which parts have a local substitute, and which do not. A first day lost to a missing prerequisite is the failure this course exists to prevent.
+
+### One change taught, none generalised
+
+A single scoped first contribution is necessary and not sufficient. A newcomer whose second task is a different shape has nothing to go on unless the course also names where a new endpoint, command, test, or component belongs. Derive the convention from where the existing ones live, and say when you are inferring it.
 
 ### Missing first contribution
 

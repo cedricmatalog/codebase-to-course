@@ -1,5 +1,7 @@
 {
-  "skills": ["codebase-to-course"],
+  "skills": [
+    "codebase-to-course"
+  ],
   "source": "any service or web application with at least two subsystems, tests, and CI configuration",
   "query": "Onboard a new engineer to this codebase. They start Monday and have never seen the product.",
   "expected_behavior": [
@@ -8,6 +10,11 @@
     "Traces one primary request or event end to end through real files, with exact line ranges that resolve at the recorded revision",
     "Names every other significant entry point rather than tracing only one and leaving the rest unmentioned",
     "Covers testing and debugging with evidence, including where logs and observability output appear",
+    "Establishes what must already exist for the system to run — databases, queues, caches, external services — and which of them a local run genuinely needs",
+    "States which environment a local run talks to, rather than listing environment variable names alone",
+    "Names where identity is authenticated and where authorisation is decided, when the repository has them, and where persistent state lives",
+    "Identifies any place where a deprecated pattern coexists with its replacement, says which is current, and marks that claim inferred unless a source states it outright",
+    "Names the placement convention for a new endpoint, test, or component, not only the single first-contribution candidate",
     "Defines the repository's domain vocabulary at first meaningful use rather than assuming it",
     "Reports contribution conventions from CONTRIBUTING, CODEOWNERS, or templates when present, and marks them undocumented when absent",
     "Every substantive claim carries a data-claim-id anchor resolving to an evidence record with a status of verified, inferred, unverified, or undocumented",

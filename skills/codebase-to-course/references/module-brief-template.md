@@ -27,6 +27,7 @@ Each brief must be self-contained but evidence-bounded. A writer receives this b
 - **Opening anchor:** [User action, request/event, CLI invocation, public API call, plan/resource path, or data transformation]
 - **Scope budget:** [One learner outcome; typically 2–3 screens]
 - **Out of scope:** [Adjacent systems or claims this module intentionally does not cover]
+- **Competing pattern:** [Any deprecated or superseded way of doing this that the learner will meet in the source, and the evidence for which one is current — or none]
 
 Do not require a metaphor. If one materially shortens the explanation, record it as an optional presentation device rather than evidence.
 

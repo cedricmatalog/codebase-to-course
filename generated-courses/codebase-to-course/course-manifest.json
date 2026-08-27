@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "generator": "codebase-to-course",
+  "generator_version": "1.0.0",
+  "generator_revision": "d8401cc765c364b82662b77487170b64e2727ee9",
+  "canonical_source": "/Users/cedric/Projects/codebase-to-course",
+  "source_kind": "local-git",
+  "source_revision": "d8401cc765c364b82662b77487170b64e2727ee9",
+  "source_fingerprint": null,
+  "source_dirty": false,
+  "generated_at": "2026-08-27T14:02:33.000Z",
+  "repository_class": "mixed",
+  "course_mode": "full",
+  "learner_assumptions": [
+    "fluent in general programming",
+    "new to this repository",
+    "has not written an Agent Skill before"
+  ],
+  "coverage_gaps": [
+    "node_modules/ — installed dependencies, not repository source",
+    "package-lock.json — generated lockfile, not hand-edited",
+    ".impeccable/ and .claude/ — local tool state, ignored by the shipped payload",
+    "skills/codebase-to-course/references/styles.css and design-system.md — presentation layer, surveyed but not taught; a new contributor rarely starts there"
+  ],
+  "claim_ledger": "evidence.json",
+  "repository_commands": "not-run",
+  "browser_review": "not-run",
+  "browser_review_reason": "generated headlessly; open index.html to review",
+  "modules": [
+    {
+      "file": "modules/01-what-it-is.html",
+      "id": "module-1",
+      "title": "What this repository is"
+    },
+    {
+      "file": "modules/02-run-it.html",
+      "id": "module-2",
+      "title": "Run it and see a change"
+    },
+    {
+      "file": "modules/03-the-path.html",
+      "id": "module-3",
+      "title": "Trace a course being built"
+    },
+    {
+      "file": "modules/04-trust.html",
+      "id": "module-4",
+      "title": "The boundary that makes it safe"
+    },
+    {
+      "file": "modules/05-first-change.html",
+      "id": "module-5",
+      "title": "Make your first change"
+    }
+  ],
+  "generated_files": [
+    "course-manifest.json",
+    "evidence.json",
+    "styles.css",
+    "main.js",
+    "_base.html",
+    "_footer.html",
+    "build.mjs",
+    "index.html",
+    "modules/01-what-it-is.html",
+    "modules/02-run-it.html",
+    "modules/03-the-path.html",
+    "modules/04-trust.html",
+    "modules/05-first-change.html"
+  ]
+}
