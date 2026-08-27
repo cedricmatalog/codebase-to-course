@@ -33,6 +33,16 @@
     return Boolean(target && target.closest('input, textarea, select, button, a, summary, [contenteditable="true"], [role="button"], [role="tab"], [role="option"]'));
   }
 
+  // One malformed exercise must never disable the rest of the course. Every
+  // pattern initializer runs inside this guard so a throw stays local to it.
+  function initAll(selector, initialize) {
+    $$(selector).forEach((element, index) => {
+      try {
+        initialize(element, index);
+      } catch (_) { /* This exercise stays static; navigation and later patterns keep working. */ }
+    });
+  }
+
   function makeStatus(element, politeness) {
     if (!element) return;
     element.setAttribute('role', 'status');
@@ -407,7 +417,7 @@
     });
   }
 
-  $$('.term').forEach((term, index) => {
+  initAll('.term', (term, index) => {
     makeLegacyControl(term, `Define ${term.textContent.trim()}`);
     term.setAttribute('aria-expanded', 'false');
     const tip = document.createElement('span');
@@ -444,7 +454,7 @@
   });
 
   /* ── QUIZ ENGINE ──────────────────────────────────────────── */
-  $$('.quiz-question-block').forEach((block, blockIndex) => {
+  initAll('.quiz-question-block', (block, blockIndex) => {
     const options = $$('.quiz-option', block);
     const question = $('.quiz-question', block);
     const questionId = question && (question.id || `quiz-question-${blockIndex + 1}`);
@@ -524,15 +534,15 @@
     if (firstOption) firstOption.focus();
   };
 
-  $$('.quiz-container').forEach(container => {
+  initAll('.quiz-container', container => {
     $$('.quiz-option', container).forEach(option => {
-      if (!option.hasAttribute('onclick')) option.addEventListener('click', () => window.selectOption(option));
+      option.addEventListener('click', () => window.selectOption(option));
     });
     const checkButton = $('.quiz-check-btn', container);
     const resetButton = $('.quiz-reset-btn', container);
     if (checkButton) checkButton.disabled = true;
-    if (checkButton && !checkButton.hasAttribute('onclick')) checkButton.addEventListener('click', () => window.checkQuiz(container.id));
-    if (resetButton && !resetButton.hasAttribute('onclick')) resetButton.addEventListener('click', () => window.resetQuiz(container.id));
+    if (checkButton) checkButton.addEventListener('click', () => window.checkQuiz(container.id));
+    if (resetButton) resetButton.addEventListener('click', () => window.resetQuiz(container.id));
   });
 
   /* ── DRAG, TAP, AND KEYBOARD MATCHING ────────────────────── */
@@ -624,7 +634,9 @@
     zones.forEach(zone => {
       const target = $('.dnd-zone-target', zone);
       if (!target) return;
-      makeLegacyControl(target, `Destination: ${($('.dnd-zone-label', zone) || {}).textContent || 'matching area'}`);
+      const zoneLabel = $('.dnd-zone-label', zone);
+      const zoneName = (zoneLabel && zoneLabel.textContent.trim()) || 'matching area';
+      makeLegacyControl(target, `Destination: ${zoneName}`);
       target.addEventListener('click', () => {
         if (selectedChip) placeChip(selectedChip, target);
         else feedback.textContent = 'Select an item first, then choose this destination.';
@@ -664,8 +676,8 @@
     const resetButton = $('.dnd-reset-btn', container);
     setTargetsEnabled(false);
     if (checkButton) checkButton.disabled = true;
-    if (checkButton && !checkButton.hasAttribute('onclick')) checkButton.addEventListener('click', () => window.checkDnD(container.id));
-    if (resetButton && !resetButton.hasAttribute('onclick')) resetButton.addEventListener('click', () => window.resetDnD(container.id));
+    if (checkButton) checkButton.addEventListener('click', () => window.checkDnD(container.id));
+    if (resetButton) resetButton.addEventListener('click', () => window.resetDnD(container.id));
   }
 
   window.checkDnD = function (containerId) {
@@ -696,7 +708,7 @@
     if (container && container._resetDnD) container._resetDnD();
   };
 
-  $$('.dnd-container').forEach(container => initDnD(container));
+  initAll('.dnd-container', initDnD);
 
   /* ── GROUP CHAT ENGINE ───────────────────────────────────── */
   function initChat(container) {
@@ -810,11 +822,11 @@
       updateChatState();
       revealNext();
     });
-    if (resetButton) resetButton.addEventListener('click', reset);
+    if (resetButton) resetButton.addEventListener('click', () => reset(true));
     updateChatState();
   }
 
-  $$('.chat-window').forEach(container => initChat(container));
+  initAll('.chat-window', initChat);
 
   /* ── FLOW ANIMATION ENGINE ───────────────────────────────── */
   function initFlow(container) {
@@ -831,7 +843,7 @@
     makeStatus(progress);
 
     try {
-      steps = $$('.flow-step', container).map((element, index) => ({
+      steps = $$('.flow-step-data .flow-step', container).map((element, index) => ({
         highlight: element.dataset.highlight,
         packet: element.dataset.packet === 'true',
         from: element.dataset.from,
@@ -844,7 +856,9 @@
       error.className = 'flow-error';
       error.setAttribute('role', 'alert');
       error.textContent = 'This walkthrough’s step list is incomplete. The surrounding lesson is still available; rebuild the course to restore the walkthrough.';
-      container.insertBefore(error, $('.flow-controls', container));
+      const controls = $('.flow-controls', container);
+      const anchorParent = (controls && controls.parentElement) || container;
+      anchorParent.insertBefore(error, controls || null);
       if (nextButton) nextButton.disabled = true;
       if (resetButton) resetButton.disabled = true;
       if (progress) progress.textContent = 'Walkthrough unavailable';
@@ -922,10 +936,10 @@
     reset(false);
   }
 
-  $$('.flow-animation').forEach(container => initFlow(container));
+  initAll('.flow-animation', initFlow);
 
   /* ── ARCHITECTURE DIAGRAM ────────────────────────────────── */
-  $$('.arch-diagram').forEach((diagram, diagramIndex) => {
+  initAll('.arch-diagram', (diagram, diagramIndex) => {
     const description = $('.arch-description', diagram);
     if (description) {
       if (!description.id) description.id = `architecture-description-${diagramIndex + 1}`;
@@ -950,16 +964,14 @@
   });
 
   /* ── BUG CHALLENGE ───────────────────────────────────────── */
-  $$('.bug-challenge').forEach(challenge => {
+  initAll('.bug-challenge', challenge => {
     makeStatus($('.bug-feedback', challenge));
     $$('.bug-line', challenge).forEach(line => {
       makeLegacyControl(line, `Inspect code line ${line.dataset.line || ''}`.trim());
       line.setAttribute('aria-pressed', 'false');
-      if (!line.hasAttribute('onclick')) {
-        const activate = () => window.checkBugLine(line, line.dataset.correct === 'true');
-        line.addEventListener('click', activate);
-        activateOnKeyboard(line, activate);
-      }
+      const activate = () => window.checkBugLine(line, line.dataset.correct === 'true');
+      line.addEventListener('click', activate);
+      activateOnKeyboard(line, activate);
     });
   });
 
@@ -987,15 +999,14 @@
   };
 
   /* ── LAYER TOGGLE ────────────────────────────────────────── */
-  $$('.layer-demo').forEach((demo, demoIndex) => {
+  initAll('.layer-demo', (demo, demoIndex) => {
     const tabList = $('.layer-tabs', demo);
     const tabs = $$('.layer-tab', demo);
     if (tabList) tabList.setAttribute('role', 'tablist');
     tabs.forEach((tab, tabIndex) => {
       tab.type = 'button';
       tab.setAttribute('role', 'tab');
-      const rawTarget = tab.getAttribute('onclick') && tab.getAttribute('onclick').match(/showLayer\(['"]([^'"]+)/);
-      const targetId = tab.dataset.layer || (rawTarget && rawTarget[1]) || `layer-${tabIndex + 1}`;
+      const targetId = tab.dataset.layer || `layer-${tabIndex + 1}`;
       const panel = findById(targetId, demo) || findById('layer-' + targetId, demo);
       if (panel) {
         if (!panel.id) panel.id = `layer-panel-${demoIndex + 1}-${tabIndex + 1}`;
@@ -1004,7 +1015,7 @@
       }
       tab.setAttribute('aria-selected', String(tab.classList.contains('active')));
       tab.tabIndex = tab.classList.contains('active') ? 0 : -1;
-      if (!tab.hasAttribute('onclick')) tab.addEventListener('click', () => window.showLayer(targetId, tab));
+      tab.addEventListener('click', () => window.showLayer(targetId, tab));
       tab.addEventListener('keydown', event => {
         if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
         event.preventDefault();

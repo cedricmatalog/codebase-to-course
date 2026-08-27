@@ -35,8 +35,9 @@ Do not publish or redistribute an installation while the release block above rem
 1. Obtain written permission from the upstream copyright holder or wait for an upstream license that clearly permits this fork's modification and redistribution. Record the permission; do not guess at a license.
 2. If you want this repository to stop appearing as a GitHub fork, follow GitHub's [detaching-a-fork procedure](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/detaching-a-fork). Detaching changes GitHub's repository relationship only; it does not remove attribution, copyright, or license obligations.
 3. Run the validation commands below and require the `Validate` workflow to pass on the exact release commit.
-4. From a clean temporary directory, verify `npx skills add cedricmatalog/codebase-to-course --list`, install it, and confirm that only `skills/codebase-to-course/` is delivered.
-5. Only after steps 1–4, update the release notice and announce the install command.
+4. Run every scenario in `evaluations/` against each model tier the skill is expected to support, and record the results. `npm test` checks that the evaluations are well formed; it cannot run them, because grading requires observing an agent.
+5. From a clean temporary directory, verify `npx skills add cedricmatalog/codebase-to-course --list`, install it, and confirm that only `skills/codebase-to-course/` is delivered.
+6. Only after steps 1–5, update the release notice and announce the install command.
 
 ## What the skill is designed to produce
 
@@ -54,6 +55,7 @@ Generated courses may include source excerpts, paths, commands, architecture des
 │       ├── agents/openai.yaml
 │       ├── references/
 │       └── scripts/                 # Trusted escaping/fingerprint helpers
+├── evaluations/                # Skill scenario evaluations and the hostile fixture
 ├── scripts/                    # Maintainer validation tooling
 ├── .github/workflows/          # CI checks
 ├── package.json                # Private maintainer tooling only
@@ -70,9 +72,11 @@ npx playwright install chromium
 npm test
 ```
 
-`npm test` runs static syntax checks and `node scripts/test.mjs`, which owns the end-to-end maintainer validation flow. CI repeats these checks and performs a local `npx skills` discovery/install smoke check to confirm that the intended skill is discoverable and internal artifacts are not included in the installed payload.
+`npm test` runs static syntax checks and `node scripts/test.mjs`, which owns the end-to-end maintainer validation flow and verifies that the scenario evaluations in `evaluations/` are well formed. CI repeats these checks and performs a local `npx skills` discovery/install smoke check to confirm that the intended skill is discoverable and internal artifacts are not included in the installed payload.
 
 Validation provides evidence about the committed templates, assembly, and tested browser paths. It does not prove that every generated course is accurate, secure, accessible, or appropriate for a target repository; generated output still requires human review.
+
+Artifact tests cannot observe agent behaviour. The scenario evaluations in [`evaluations/`](evaluations/) cover what the agent does with the skill — coverage that scales to the repository, an intact trust boundary against a hostile fixture, and correct provenance for a non-Git source. They are graded by a person against each scenario's `expected_behavior` list; see [`evaluations/README.md`](evaluations/README.md).
 
 ## Security
 

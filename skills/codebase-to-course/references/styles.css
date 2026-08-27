@@ -877,6 +877,15 @@ p:last-child { margin-bottom: 0; }
 .dnd-zone-target.drag-over { border-color: var(--color-accent); background: var(--color-accent-light); }
 .dnd-zone-target.correct-placed { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); font-weight: 600; }
 .dnd-zone-target.incorrect-placed{ border-color: var(--color-error); background: var(--color-error-light); }
+/* Status line for matching exercises. main.js writes selection, placement, and
+   result text here, so it must stay legible even before any interaction. */
+.dnd-feedback {
+  margin: var(--space-4) 0 0;
+  min-height: 1.5em;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
 .touch-ghost {
   padding: var(--space-2) var(--space-4);
   background: var(--color-accent);

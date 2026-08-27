@@ -2,6 +2,8 @@
 
 Reference for the canonical system in `references/styles.css`. Copy `styles.css` verbatim into every course; use this document to understand the available tokens and patterns. Only the four accent variables are overridden in `_base.html`.
 
+The CSS in this document is a description of what the copied stylesheet already provides, not code to author. Module files contain no `<style>` block and no `<script>`; the builder rejects both.
+
 ## Table of Contents
 1. [Color Palette](#color-palette)
 2. [Typography](#typography)
@@ -198,30 +200,7 @@ Use warm-tinted RGBA (44, 42, 40) — never pure black shadows.
 }
 ```
 
-**JS setup for stagger:**
-```javascript
-document.querySelectorAll('.stagger-children').forEach(parent => {
-  Array.from(parent.children).forEach((child, i) => {
-    child.style.setProperty('--stagger-index', i);
-  });
-});
-```
-
-**Intersection Observer (trigger reveals):**
-```javascript
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      observer.unobserve(entry.target); // animate only once
-    }
-  });
-}, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
-
-document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
-```
-
-`main.js` adds `.motion-ready` only when it can initialize reveal behavior. It also honors `prefers-reduced-motion`, removes animation delays, and keeps every element visible. Never add a separate unpausable animation loop inside module HTML.
+**JavaScript:** none to write. `main.js` adds `.motion-ready` only when it can initialize reveal behavior, sets `--stagger-index` on every `.stagger-children` child, and runs the IntersectionObserver that adds `.visible`. It also honors `prefers-reduced-motion`, removes animation delays, and keeps every element visible. Never add a separate unpausable animation loop inside module HTML.
 
 ---
 
@@ -244,18 +223,7 @@ document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
 </nav>
 ```
 
-**Progress bar (CSS-only where possible, JS fallback):**
-```javascript
-function updateProgressBar() {
-  const scrollTop = window.scrollY;
-  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = (scrollTop / scrollHeight) * 100;
-  progressBar.style.transform = `scaleX(${progress / 100})`;
-}
-window.addEventListener('scroll', () => {
-  requestAnimationFrame(updateProgressBar);
-}, { passive: true });
-```
+**Progress:** `main.js` owns the progress bar, the persistent `.nav-status` text, saved progress, and the Contents panel. A module never writes navigation or progress code.
 
 **Nav behavior:**
 - Module dots stay hidden in the shipped shell; the persistent status gives location without adding simultaneous choices
@@ -264,11 +232,7 @@ window.addEventListener('scroll', () => {
 - The searchable Contents panel exposes every module title without requiring hover or memory
 - Saved progress offers Resume or Start from the beginning; Help documents keyboard shortcuts
 
-**Keyboard navigation:**
-```javascript
-// main.js ignores every interactive control before handling J/K, arrows,
-// Home, End, and ?. Never add a second global keyboard handler in a module.
-```
+**Keyboard navigation:** `main.js` ignores every interactive control before handling J/K, arrows, Home, End, and `?`. Never add a second global keyboard handler in a module.
 
 ---
 
@@ -282,13 +246,13 @@ window.addEventListener('scroll', () => {
       <span class="module-stage">Trace the request</span>
       <span class="module-number" aria-hidden="true">0N</span>
       <h2 class="module-title">Module Title</h2>
-      <p class="module-subtitle">One-line description of what this module teaches</p>
+      <p class="module-subtitle" data-claim-id="C-001">One-line description of what this module teaches</p>
     </header>
 
     <div class="module-body">
       <section class="screen animate-in">
         <h3 class="screen-heading">Screen Title</h3>
-        <p>Content...</p>
+        <p data-claim-id="C-002">One substantive claim, anchored to its evidence ledger entry...</p>
         <!-- Interactive elements, code translations, etc. -->
       </section>
 

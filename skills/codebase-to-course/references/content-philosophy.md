@@ -2,11 +2,15 @@
 
 > **When to read this:** Read only the headings selected by the course plan or module brief. `evidence-contract.md` is normative for claims, excerpts, provenance, and HTML safety.
 
-## Optimize for the first confident change
+## Write for the engineer who just joined
 
-The learner needs an operational mental model, not exhaustive documentation. Every screen should help them run, locate, trace, change, test, debug, or deliver something. Remove content that does not change what they can do.
+The reader is new to the team. Assume fluency in general programming and no knowledge of this product, its domain, its internal names, or how this team works. Nothing that a teammate would explain in the first week can be assumed: what the system does, who depends on it, what the entity nouns mean, which command actually runs the thing.
 
-Default to a compact course of roughly 15 minutes. A small repository may need only three modules. Full mode may add depth, but not filler.
+They need an operational mental model, not exhaustive documentation. Every screen should help them run, locate, trace, change, test, debug, or deliver something. Remove content that does not change what they can do.
+
+Order matters for a newcomer: what the system does for its users, then how it is built, then how to change it. Architecture explained before purpose gives them a map of a place they cannot picture.
+
+A course starts from six modules of 2–4 short screens and grows to cover every operational boundary the repository contains. Depth means more evidence, not more prose about the same evidence: a second subsystem earns a screen or a module, a second paragraph about the first subsystem does not. A repository with one operational boundary gets fewer, merged modules — never padded ones.
 
 ## One outcome per screen
 
@@ -29,7 +33,7 @@ Do not invent UI behavior for a library or a customer journey for infrastructure
 
 ## Code and evidence
 
-Every substantive explanation follows `evidence-contract.md`. Show the repository-relative file path and line range next to an excerpt. Mark inferred, unverified, and undocumented claims visibly; do not decorate a guess until it looks factual.
+Every substantive explanation follows `evidence-contract.md`. Each substantive statement carries a `data-claim-id` anchor tying it to its ledger claim, and shows the repository-relative file path and line range next to an excerpt. Mark inferred, unverified, and undocumented claims visibly; do not decorate a guess until it looks factual.
 
 ### Decoded-text verbatim excerpts
 
@@ -57,7 +61,7 @@ Metaphors, humor, and component personality are optional. Use them only when the
 
 ## Glossary guidance
 
-Define internal names, domain terms, and uncommon abbreviations at first meaningful use. Define general programming terms only when learner assumptions warrant it. Prefer a concise inline definition or nearby glossary note.
+Define internal names, domain terms, and uncommon abbreviations at first meaningful use. Every term a teammate would define in conversation, this course defines in text — an entity noun that means something specific here, a service nickname, an internal acronym. Define general programming terms only when learner assumptions warrant it. Prefer a concise inline definition or nearby glossary note.
 
 Use the shared tooltip pattern only when its safe markup contract can be satisfied without placing repository content in attributes. Otherwise keep the explanation in visible text.
 
@@ -72,7 +76,7 @@ Choose at most one primary interaction per module, and only when interaction imp
 - a recoverable error state
 - reset, pause, or escape when applicable
 
-Supporting practice may sit inside a clearly labeled native `<details>` disclosure. A module may contain no interaction. Group chat, animated flows, matching, layer toggles, and bug challenges are optional patterns rather than course requirements.
+Every interaction opens with one `activity-instruction` line telling the learner what to do with it. Supporting practice sits inside a `details.practice-extra` disclosure whose summary names the outcome (`Optional · Match each file to its job`); see “Instruction and Optional-Practice Wrappers” in `interactive-elements.md`. A module may contain no interaction. Group chat, animated flows, matching, layer toggles, and bug challenges are optional patterns rather than course requirements.
 
 ## Scenario questions
 
@@ -83,7 +87,7 @@ Use a question only when it tests application:
 3. how a new request or input would travel
 4. which boundary should own new behavior
 
-Avoid definitions, filename recall, syntax trivia, and questions answered by copying the previous paragraph. Compact mode usually needs zero or one scenario question per module; full mode may add another when it tests a distinct operational decision.
+Avoid definitions, filename recall, syntax trivia, and questions answered by copying the previous paragraph. A module usually needs zero or one scenario question; add a second only when it tests a distinct operational decision.
 
 Wrong answers should explain the relevant boundary without judgment. Correct answers should briefly reinforce the principle. Do not score the learner.
 

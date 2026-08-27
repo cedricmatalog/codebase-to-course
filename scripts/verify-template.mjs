@@ -159,8 +159,9 @@ try {
     source_dirty: false,
     generated_at: '2026-08-05T12:00:00.000Z',
     repository_class: 'mixed',
-    course_mode: 'compact',
+    course_mode: 'full',
     learner_assumptions: ['general programming knowledge', 'new to repository'],
+    coverage_gaps: ['node_modules/ — installed dependencies, not repository source'],
     claim_ledger: 'evidence.json',
     repository_commands: 'not-run',
     browser_review: 'not-run',
@@ -273,6 +274,11 @@ try {
   await expectRejectedMutation('modules/01-module.html', source => `${source}\n<a href="https://example.com">Remote</a>`, 'non-local or unsafe href');
   await expectRejectedMutation('modules/01-module.html', source => `${source}\n<img src="data:image/png;base64,AA==">`, 'forbidden <img>');
   await expectRejectedMutation('modules/01-module.html', source => source.replace('data-claim-id="C-001"', 'data-steps="repository prose" data-claim-id="C-001"'), 'forbidden repository-text attribute');
+  await expectRejectedMutation('modules/01-module.html', source => source.replace(' data-claim-id="C-001"', ''), 'evidence claims are not referenced by HTML');
+  await expectRejectedMutation('modules/01-module.html', source => `${source}\n<button class="btn" title="x>y" onclick="alert(1)">Sneaky</button>`, 'unescaped < or > inside an attribute value');
+  await expectRejectedMutation('modules/01-module.html', source => `${source}\n<a class="x" title="a>b" href="javascript:alert(1)">Bad</a>`, 'unescaped < or > inside an attribute value');
+  await expectRejectedMutation('modules/01-module.html', source => `${source}\n<p id="repeated-anchor"></p><p id="repeated-anchor"></p>`, 'duplicate HTML ids');
+  await expectAcceptedMutation('modules/01-module.html', source => `${source}\n<pre><code>&lt;section id="app"&gt;&lt;/section&gt;\n&lt;article id="app"&gt;&lt;/article&gt;</code></pre>`, '&lt;article id="app"&gt;');
   await expectRejectedMutation('course-manifest.json', source => JSON.stringify({ ...JSON.parse(source), generated_files: JSON.parse(source).generated_files.filter(file => file !== 'index.html') }, null, 2), 'must own "index.html"');
   await expectRejectedMutation('course-manifest.json', source => JSON.stringify({ ...JSON.parse(source), source_dirty: true }, null, 2), 'require an evidence snapshot source_fingerprint');
   await expectRejectedMutation('evidence.json', source => JSON.stringify({ ...JSON.parse(source), source_identity: 'mismatched-revision' }, null, 2), 'must match the manifest analysis identity');

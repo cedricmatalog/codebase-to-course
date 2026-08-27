@@ -1,0 +1,14 @@
+{
+  "skills": ["codebase-to-course"],
+  "source": "any small single-purpose CLI with a build step, fewer than about 2000 lines",
+  "query": "Use the codebase-to-course skill to build an onboarding course for this repository.",
+  "expected_behavior": [
+    "Classifies the repository as a CLI and anchors the course on a documented invocation rather than inventing a user interface or customer journey",
+    "Produces fewer than six modules, merging setup with the system map and testing with the trace, because the repository has one operational boundary",
+    "Does not create a delivery or deployment module when the repository has no release evidence; records that absence as undocumented instead of omitting it silently",
+    "States the edit-to-result loop from evidence: whether a change requires a rebuild or restart before it takes effect, citing the script or config that settles it",
+    "Names where the command's output appears, so a newcomer knows which window a print statement lands in",
+    "Records every top-level directory in the manifest as either taught or a coverage gap with a reason",
+    "Runs the builder successfully and reports the exact index.html path"
+  ]
+}

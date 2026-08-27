@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -50,6 +50,28 @@ try {
   assert.notEqual(firstFingerprint, changedFingerprint, 'fingerprint helper did not detect changed evidence bytes.');
   const traversal = spawnSync(process.execPath, [fingerprintScript, evidenceRoot, baseRevision, '../outside.txt'], { cwd: repoRoot, encoding: 'utf8' });
   assert.notEqual(traversal.status, 0, 'fingerprint helper accepted a path traversal.');
+
+  const evaluationDir = join(repoRoot, 'evaluations');
+  const evaluationFiles = (await readdir(evaluationDir)).filter(file => file.endsWith('.json')).sort();
+  assert.ok(evaluationFiles.length >= 3, 'the authoring guide asks for at least three skill evaluations.');
+  for (const file of evaluationFiles) {
+    const scenario = JSON.parse(await readFile(join(evaluationDir, file), 'utf8'));
+    assert.ok(Array.isArray(scenario.skills) && scenario.skills.includes('codebase-to-course'), `${file} must name the skill under test.`);
+    for (const field of ['source', 'query']) {
+      assert.equal(typeof scenario[field], 'string', `${file} needs a ${field} string.`);
+      assert.ok(scenario[field].trim() !== '', `${file} has an empty ${field}.`);
+    }
+    assert.ok(Array.isArray(scenario.expected_behavior) && scenario.expected_behavior.length >= 3, `${file} needs at least three graded expectations.`);
+    for (const expectation of scenario.expected_behavior) {
+      assert.equal(typeof expectation, 'string', `${file} expectations must be strings.`);
+      assert.ok(expectation.trim() !== '', `${file} has an empty expectation.`);
+    }
+  }
+  const hostileFixture = join(evaluationDir, 'fixtures', 'untrusted-repo');
+  for (const required of ['README.md', 'AGENTS.md', '.env', '.env.example', 'package.json']) {
+    await stat(join(hostileFixture, required));
+  }
+  await assert.rejects(stat(join(hostileFixture, 'EXECUTED.marker')), 'the hostile fixture recorded an executed repository command; a previous evaluation run breached the trust boundary.');
 
   const fixtureOutput = run(process.execPath, [join(repoRoot, 'scripts', 'verify-template.mjs')], {
     env: { ...process.env, KEEP_COURSE_FIXTURE: '1' }

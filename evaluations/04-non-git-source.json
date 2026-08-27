@@ -1,0 +1,12 @@
+{
+  "skills": ["codebase-to-course"],
+  "source": "any local directory with no .git directory",
+  "query": "Build me an onboarding course for this folder.",
+  "expected_behavior": [
+    "Classifies the source as local-non-git and sets source_revision to null in the manifest",
+    "Computes an evidence-snapshot fingerprint with the installed fingerprint helper and uses it as the analysis identity",
+    "Uses that same fingerprint as source_identity on every evidence record and in the evidence ledger",
+    "Passes only evidence files it already read to the fingerprint helper, and no secret-bearing files",
+    "Builds successfully and shows the fingerprint in the course provenance footer"
+  ]
+}

@@ -2,7 +2,7 @@
 
 Implementation patterns for every interactive element type used in courses. Pick the elements that best serve each module's teaching goal.
 
-> **Architecture and safety note:** All CSS and JavaScript for these elements live in `references/styles.css` and `references/main.js`, which are copied verbatim into every course directory. When writing module HTML files, use only the HTML patterns below—never inline `<style>` or `<script>`. Repository-derived prose and source text belongs in escaped text nodes, including the hidden text nodes shown here. `data-*`, `id`, `class`, and ARIA attributes may contain only fixed author-created identifiers or generic template labels. The builder rejects the legacy prose-bearing attributes.
+> **Architecture and safety note:** All CSS and JavaScript for these elements already live in `references/styles.css` and `references/main.js`, which are copied verbatim into every course directory. **Write only the HTML patterns below.** The CSS blocks in this document describe what the shipped stylesheet already provides so you can predict the rendering — they are documentation, not code to copy; the builder rejects any module containing `<style>` or `<script>`. Repository-derived prose and source text belongs in escaped text nodes, including the hidden text nodes shown here. `data-*`, `id`, `class`, and ARIA attributes may contain only fixed author-created identifiers or generic template labels, plus the `data-claim-id` anchors defined in `evidence-contract.md`. No attribute value may contain a raw `<` or `>`. The builder rejects the legacy prose-bearing attributes.
 
 ## Table of Contents
 1. [Code ↔ English Translation Blocks](#code--english-translation-blocks)
@@ -22,6 +22,7 @@ Implementation patterns for every interactive element type used in courses. Pick
 15. [Visual File Tree](#visual-file-tree)
 16. [Icon-Label Rows](#icon-label-rows)
 17. [Numbered Step Cards](#numbered-step-cards)
+18. [Instruction and Optional-Practice Wrappers](#instruction-and-optional-practice-wrappers)
 
 ---
 
@@ -272,7 +273,7 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
 
 Step-by-step visualization of data moving between components. User clicks "Next Step" to advance.
 
-**Wiring:** `main.js` auto-initializes every `.flow-animation` on page load. Each hidden `.flow-step` uses only fixed author-created actor IDs in `data-highlight`, `data-from`, and `data-to`; its human-readable description goes in a `.flow-step-text` text node. Actor element IDs must be fixed safe IDs such as `flow-m3-actor-1`. Control buttons need classes `.flow-next-btn` and `.flow-reset-btn`.
+**Wiring:** `main.js` auto-initializes every `.flow-animation` on page load and reads its steps from `.flow-step-data .flow-step` only, so the `<ol class="flow-step-data" hidden>` wrapper is required — the unrelated static [Flow Diagrams](#flow-diagrams) pattern reuses the `.flow-step` class name and would otherwise be picked up as walkthrough data. Each hidden `.flow-step` uses only fixed author-created actor IDs in `data-highlight`, `data-from`, and `data-to`; its human-readable description goes in a `.flow-step-text` text node. Actor element IDs must be fixed safe IDs such as `flow-m3-actor-1`. Control buttons need classes `.flow-next-btn` and `.flow-reset-btn`.
 
 **HTML:**
 ```html
@@ -508,6 +509,8 @@ Grid of cards highlighting engineering patterns, tech stack components, or key c
 
 ## Flow Diagrams
 
+A static, non-interactive sequence. It shares the `.flow-step` class name with the [Message Flow](#message-flow--data-flow-animation) walkthrough but is a different pattern with no wiring: use it inside `.flow-steps`, and never inside a `.flow-animation` container.
+
 **Horizontal flow (desktop):**
 ```html
 <div class="flow-steps">
@@ -643,89 +646,10 @@ The most important accessibility feature for non-technical learners. Any technic
 }
 ```
 
-**JS — position: fixed tooltips appended to body (never clipped by overflow):**
-```javascript
-// Tooltip container — appended to body so it's never clipped
-let activeTooltip = null;
-
-function positionTooltip(term, tip) {
-  const rect = term.getBoundingClientRect();
-  const tipWidth = 300; // approximate
-  let left = rect.left + rect.width / 2 - tipWidth / 2;
-  // Clamp to viewport
-  left = Math.max(8, Math.min(left, window.innerWidth - tipWidth - 8));
-
-  // Try above first
-  let top = rect.top - 8;
-  tip.style.left = left + 'px';
-
-  // Position above by default, flip below if no room
-  document.body.appendChild(tip);
-  const tipHeight = tip.offsetHeight;
-  if (rect.top - tipHeight - 8 < 0) {
-    // Flip below
-    tip.style.top = (rect.bottom + 8) + 'px';
-    tip.classList.add('flip');
-  } else {
-    tip.style.top = (rect.top - tipHeight - 8) + 'px';
-    tip.classList.remove('flip');
-  }
-}
-
-document.querySelectorAll('.term').forEach(term => {
-  const tip = document.createElement('span');
-  tip.className = 'term-tooltip';
-  tip.textContent = term.querySelector('.term-definition')?.textContent.trim()
-    || 'No definition was provided for this term.';
-
-  // Hover for desktop
-  term.addEventListener('mouseenter', () => {
-    if (activeTooltip && activeTooltip !== tip) {
-      activeTooltip.classList.remove('visible');
-      activeTooltip.remove();
-    }
-    positionTooltip(term, tip);
-    requestAnimationFrame(() => tip.classList.add('visible'));
-    activeTooltip = tip;
-  });
-
-  term.addEventListener('mouseleave', () => {
-    tip.classList.remove('visible');
-    setTimeout(() => { if (!tip.classList.contains('visible')) tip.remove(); }, 150);
-    activeTooltip = null;
-  });
-
-  // Tap for mobile
-  term.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (activeTooltip && activeTooltip !== tip) {
-      activeTooltip.classList.remove('visible');
-      activeTooltip.remove();
-    }
-    if (tip.classList.contains('visible')) {
-      tip.classList.remove('visible');
-      tip.remove();
-      activeTooltip = null;
-    } else {
-      positionTooltip(term, tip);
-      requestAnimationFrame(() => tip.classList.add('visible'));
-      activeTooltip = tip;
-    }
-  });
-});
-
-// Close tooltips when clicking elsewhere
-document.addEventListener('click', () => {
-  if (activeTooltip) {
-    activeTooltip.classList.remove('visible');
-    activeTooltip.remove();
-    activeTooltip = null;
-  }
-});
-```
+**JavaScript:** none to write. `main.js` creates each tooltip element from the hidden `.term-definition` text node, appends it to `document.body` so no ancestor can clip it, positions and flips it against the viewport, and wires hover, click, focus, Enter/Space, Escape, and outside-click dismissal. Do not add tooltip scripts to a module; the builder rejects them.
 
 **Rules:**
-- Mark up EVERY technical term on first use in each module (API, DOM, callback, async, endpoint, middleware, etc.)
+- Mark up a term on its first meaningful use in a module, calibrated to the learner: repository vocabulary and domain terms always, general programming terms only when the learner assumptions warrant it (see “Tooltip overload” in `gotchas.md`)
 - Keep definitions to 1-2 sentences max, in everyday language
 - Use a metaphor in the definition when it helps — e.g., "A **callback** is like leaving your phone number at a restaurant so they can call you when your table is ready"
 - Don't mark the same term twice within the same screen — only on first appearance per module
@@ -893,3 +817,31 @@ For sequences that would otherwise be a numbered paragraph list. Visual, scannab
 }
 .step-body p { margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--text-sm); }
 ```
+
+---
+
+## Instruction and Optional-Practice Wrappers
+
+Two wrappers apply to every interaction in this file regardless of type. Both are styled by `styles.css`; neither needs any JavaScript.
+
+**Instruction line.** Every interaction opens with one sentence telling the learner exactly what to do with it. Without it, learners look at an exercise and do not know it is theirs to operate.
+
+```html
+<p class="activity-instruction"><strong>Do this next:</strong> advance the trace to keep every transformation visible in order.</p>
+```
+
+**Optional practice.** Supporting or secondary practice belongs in a native disclosure so the primary path stays short. The summary must name the outcome, not just say "Optional".
+
+```html
+<details class="practice-extra">
+  <summary>Optional · Match each file to its job</summary>
+  <p class="activity-instruction"><strong>Do this next:</strong> select each file, place it beside the job it owns, then check both matches.</p>
+  <!-- one interaction from this file -->
+</details>
+```
+
+**Rules:**
+- One `activity-instruction` per interaction, immediately before it, phrased as an action
+- `Optional · ` prefix on every `practice-extra` summary, followed by the outcome the learner gets
+- A module's primary interaction is never hidden inside a disclosure
+- `<details>` is native: it works without JavaScript, with a keyboard, and with a screen reader

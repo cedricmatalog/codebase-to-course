@@ -31,13 +31,27 @@ Validate GitHub URLs, create a fresh OS-provided temporary directory, and pass t
 
 ### Source text becoming HTML
 
-Raw source text is not safe markup. Follow `evidence-contract.md`: serialize repository content only as escaped text nodes, never in attributes, and verify that decoded visible excerpt text equals the cited source. A literal `</code>` or quote from the repository must remain inert text.
+Raw source text is not safe markup. Follow `evidence-contract.md`: serialize repository content only as escaped text nodes, never in attributes, and verify that decoded visible excerpt text equals the cited source. A literal `</code>` or quote from the repository must remain inert text. Use the installed `scripts/escape-html.mjs` helper rather than escaping long excerpts by hand.
+
+### Angle brackets inside attributes
+
+A `>` inside a quoted attribute value is valid HTML but ends the tag as far as line-based review is concerned, hiding every attribute after it. Never emit a raw `<` or `>` in an attribute value; the builder rejects it.
 
 ## Evidence quality
 
 ### Invented onboarding commands
 
 Trace each command to a repository source and its definition. Distinguish documented, found, approved, executed-success, executed-failed, and not-run. Never turn a plausible package-manager convention into a promised setup step.
+
+### Invented product purpose
+
+"What this system does and who uses it" is the one section a model can write fluently with no evidence at all, and a new hire has no way to catch the error. Take purpose, users, and scale from the README, documentation, product copy, or package metadata, and cite it. When the repository never says what it is for, say that it is `undocumented` and describe only what the code demonstrably does.
+
+### The invisible change
+
+The most common first-day dead end is a change that appears to do nothing: the edit needs a rebuild, the watcher was never started, the running process is serving a stale bundle, the file being edited is generated output, or the message is going to a window the newcomer is not looking at. "It compiles, so it ran" is the assumption that wastes the afternoon.
+
+Establish from evidence which loop this repository actually has — a watching dev server, an explicit rebuild step, a restart, a container rebuild — and name where its output lands. A script named `dev` proves nothing on its own; trace what it invokes. When the evidence does not settle it, say so and mark the claim `inferred` or `undocumented` rather than promising hot reload the repository never configured.
 
 ### Invented rationale
 
@@ -46,6 +60,10 @@ Source structure can show what the system does; it rarely proves why maintainers
 ### Citation drift
 
 Create evidence records while reading. Do not add file paths or line ranges later from memory. Before handoff, confirm every citation against the recorded source revision and ensure excerpts still match.
+
+### Unanchored claims
+
+The ledger and the HTML must agree exactly: every claim needs one `data-claim-id` anchor on the element carrying its visible statement, and every anchor needs a real claim. A ledger written after the modules almost always drifts — write both together. IDs are `C-001`/`E-001` style with at least three digits; `C-01` is rejected.
 
 ### Over-broad evidence status
 
@@ -57,13 +75,21 @@ A module-level “verified” label cannot make every sentence verified. Status 
 
 Not every repository has a UI or customer journey. Classify it as application, service, CLI, library, infrastructure, data, or mixed before choosing an entry point. Use an API call, command, public function, plan, event, or transformation when that is the real operational anchor.
 
+### Unsurveyed ground
+
+A course that teaches the primary path well and never mentions the other half of the repository looks complete and is not. Enumerate every top-level directory and subsystem before fixing the curriculum, then account for each one: taught, or recorded in `coverage_gaps` with a reason. Discovering a subsystem after the modules are written means the survey was incomplete.
+
+### Absence reported as silence
+
+A repository with no tests, no CI, or no deployment path has told you something. Record it as `undocumented` with the evidence that establishes the absence, and say so in the course. Omitting the module entirely leaves the learner unable to tell an absent workflow from an unexamined one.
+
 ### Missing first contribution
 
 Recommend one low-risk change grounded in current repository evidence. Name likely files, validation steps, dependencies, and risks, and state that maintainers have not approved the work unless evidence says otherwise.
 
 ### Too much course
 
-Compact mode targets roughly 15 minutes. Do not inflate a small repository to satisfy a module, screen, quiz, metaphor, or interaction count. Cut anything that does not help the learner act.
+Coverage is measured against what the repository contains, never against a module count. Do not inflate a small repository to satisfy a module, screen, quiz, metaphor, or interaction count. A module that restates another module's evidence is filler; merge it. A small repository simply gets fewer modules. Cut anything that does not help the learner act — but cut it because the learner does not need it, never because the course felt long enough.
 
 ## Output ownership and freshness
 
@@ -77,7 +103,7 @@ Build in a sibling staging directory. Replace or remove only paths owned by the 
 
 ### Missing provenance
 
-The manifest must include canonical source identity, full Git revision when available, an evidence-snapshot fingerprint for non-Git or non-clean sources, dirty state, UTC generation time, generator version/hash, course mode, learner assumptions, evidence location, generated files, execution status, and browser-review status. Without this, the course is not complete.
+The manifest must include canonical source identity, full Git revision when available, an evidence-snapshot fingerprint for non-Git or non-clean sources, dirty state, UTC generation time, generator version/hash, the fixed `course_mode: "full"` marker, learner assumptions, coverage gaps, evidence location, generated files, execution status, and browser-review status. Without this, the course is not complete.
 
 ### Incomplete builder package
 
@@ -101,6 +127,10 @@ Do not simplify or “clean up” code inside a cited range. Choose a shorter co
 
 Do not test definitions, filenames, or syntax trivia. Use a new change, debugging, architecture, or tracing scenario that requires application.
 
+### Assumed insider knowledge
+
+Onboarding fails on the things nobody writes down: what the product is for, what an internal noun means, which of four scripts actually starts the app, whether a failing check blocks a merge. A course that explains the architecture but leaves a newcomer unable to name the product, its vocabulary, or its review process has taught the wrong half.
+
 ### Tooltip overload
 
 Define repository vocabulary at first meaningful use, calibrated to the learner. Prefer visible text when the shared tooltip pattern would require repository-derived attribute content.
@@ -108,6 +138,10 @@ Define repository vocabulary at first meaningful use, calibrated to the learner.
 ### Anonymous navigation
 
 Every module destination needs a complete visible title and current-location feedback. Keep the searchable Contents panel when the shell provides it.
+
+### Unlabeled exercises
+
+An interaction with no instruction line reads as decoration. Open every one with an `activity-instruction` naming the action, and give each `practice-extra` summary a real outcome rather than a bare "Optional".
 
 ### Mouse-only learning
 
@@ -123,6 +157,6 @@ The shared engine handles tooltip positioning. Do not add custom tooltip scripts
 
 ## Verification gaps
 
-Structural checks are mandatory even without a browser. Verify manifest ownership, placeholders, module/nav correspondence, duplicate IDs, claim records, decoded excerpt equality, absence of repository-derived attributes, and accessible control names.
+Structural checks are mandatory even without a browser. Verify manifest ownership, placeholders, module/nav correspondence, duplicate IDs, claim records and their anchors, decoded excerpt equality, absence of repository-derived attributes, and accessible control names.
 
 If browser automation is unavailable, say so plainly and provide a short manual desktop/mobile/keyboard checklist. Never claim browser or visual verification that did not occur.

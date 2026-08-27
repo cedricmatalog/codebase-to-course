@@ -39,7 +39,7 @@ function escapeHtml(value) {
 }
 
 function attribute(tag, name) {
-  const match = tag.match(new RegExp(`\\b${name}\\s*=\\s*(["'])(.*?)\\1`, 'i'));
+  const match = tag.match(new RegExp(`\\b${name}\\s*=\\s*(["'])(.*?)\\1`, 'is'));
   return match?.[2] ?? null;
 }
 
@@ -47,12 +47,56 @@ function hasClass(tag, className) {
   return (attribute(tag, 'class') || '').split(/\s+/).includes(className);
 }
 
-function idsIn(source) {
-  return Array.from(source.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gi), match => match[2]);
+// Collect opening tags the way a browser delimits them: quoted attribute values may
+// contain ">" and must not truncate the tag, or every later attribute check is skipped.
+// Returns opening tags only; comments, doctypes, and closing tags are not attribute carriers.
+function openingTags(source, label) {
+  const tags = [];
+  let index = 0;
+  while (index < source.length) {
+    const start = source.indexOf('<', index);
+    if (start === -1) break;
+    if (source.startsWith('<!--', start)) {
+      const end = source.indexOf('-->', start + 4);
+      if (end === -1) fail(`${label} contains an unterminated HTML comment.`);
+      index = end + 3;
+      continue;
+    }
+    if (!/[A-Za-z/]/.test(source[start + 1] || '')) {
+      index = start + 1;
+      continue;
+    }
+    let cursor = start + 1;
+    let quote = null;
+    while (cursor < source.length) {
+      const character = source[cursor];
+      if (quote) {
+        if (character === quote) quote = null;
+      } else if (character === '"' || character === "'") {
+        quote = character;
+      } else if (character === '>') {
+        break;
+      }
+      cursor += 1;
+    }
+    if (cursor >= source.length) fail(`${label} contains an unterminated tag or attribute value.`);
+    const tag = source.slice(start, cursor + 1);
+    if (!tag.startsWith('</')) tags.push(tag);
+    index = cursor + 1;
+  }
+  return tags;
 }
 
-function claimIdsIn(source) {
-  return Array.from(source.matchAll(/\bdata-claim-id\s*=\s*(["'])(.*?)\1/gi), match => match[2]);
+function attributeValues(tag) {
+  return Array.from(tag.matchAll(/=\s*(["'])(.*?)\1/gs), match => match[2]);
+}
+
+function idsIn(tags) {
+  return tags.map(tag => attribute(tag, 'id')).filter(value => value !== null);
+}
+
+function claimIdsIn(tags) {
+  return tags.map(tag => attribute(tag, 'data-claim-id')).filter(value => value !== null);
 }
 
 function validateRelativeFile(file, label) {
@@ -168,8 +212,9 @@ function validateManifest(manifest) {
   manifest.generated_at = nonEmptyString(manifest.generated_at, 'manifest.generated_at');
   if (Number.isNaN(Date.parse(manifest.generated_at)) || !manifest.generated_at.endsWith('Z')) fail('manifest.generated_at must be an ISO 8601 UTC timestamp ending in Z.');
   if (!allowedRepositoryClasses.has(manifest.repository_class)) fail(`manifest.repository_class has invalid value "${manifest.repository_class}".`);
-  if (!['compact', 'full'].includes(manifest.course_mode)) fail('manifest.course_mode must be "compact" or "full".');
+  if (manifest.course_mode !== 'full') fail('manifest.course_mode must be "full"; this generator produces one course shape.');
   manifest.learner_assumptions = stringArray(manifest.learner_assumptions, 'manifest.learner_assumptions');
+  manifest.coverage_gaps = stringArray(manifest.coverage_gaps, 'manifest.coverage_gaps', { allowEmpty: true });
   manifest.repository_commands = nonEmptyString(manifest.repository_commands, 'manifest.repository_commands');
   manifest.browser_review = nonEmptyString(manifest.browser_review, 'manifest.browser_review');
   if (manifest.browser_review === 'not-run') nonEmptyString(manifest.browser_review_reason, 'manifest.browser_review_reason');
@@ -313,7 +358,13 @@ async function build() {
     }
     const forbiddenTag = source.match(/<\/?\s*(html|head|body|style|script|iframe|object|embed|base|meta|link|img|audio|video|source|track|form)\b/i);
     if (forbiddenTag) fail(`${path.file} contains forbidden <${forbiddenTag[1].toLowerCase()}> markup.`);
-    const openingMarkup = Array.from(source.matchAll(/<[A-Za-z][^>]*>/g), match => match[0]).join('\n');
+    const tags = openingTags(source, path.file);
+    for (const tag of tags) {
+      if (attributeValues(tag).some(value => /[<>]/.test(value))) {
+        fail(`${path.file} contains an unescaped < or > inside an attribute value. Repository content belongs in escaped text nodes.`);
+      }
+    }
+    const openingMarkup = tags.join('\n');
     const eventHandler = openingMarkup.match(/\son[a-z0-9_-]+\s*=/i);
     if (eventHandler) fail(`${path.file} contains a forbidden inline event handler (${eventHandler[0].trim()}).`);
     const repositoryTextAttribute = openingMarkup.match(/\bdata-(definition|desc|description|hint|explanation(?:-right|-wrong)?|stage|steps)\s*=/i);
@@ -324,7 +375,7 @@ async function build() {
       if (/^\s*javascript\s*:/i.test(match[2])) fail(`${path.file} contains a forbidden javascript: URL.`);
       if (!/^#[a-z][a-z0-9-]*$/.test(match[2])) fail(`${path.file} contains a non-local or unsafe href value.`);
     }
-    const moduleTags = Array.from(source.matchAll(/<section\b[^>]*>/gi), match => match[0]).filter(tag => hasClass(tag, 'module'));
+    const moduleTags = tags.filter(tag => /^<section\b/i.test(tag) && hasClass(tag, 'module'));
     if (moduleTags.length !== 1) fail(`${path.file} must contain exactly one section.module opening tag.`);
     const actualId = attribute(moduleTags[0], 'id');
     if (actualId !== id) fail(`${path.file} declares module id "${actualId || '(missing)'}"; manifest expects "${id}".`);
@@ -342,7 +393,7 @@ async function build() {
     if (tokens.length) fail(`${file} contains unresolved placeholders: ${tokens.join(', ')}.`);
   }
 
-  const navTags = Array.from(base.matchAll(/<button\b[^>]*>/gi), match => match[0]).filter(tag => hasClass(tag, 'nav-dot'));
+  const navTags = openingTags(base, '_base.html').filter(tag => /^<button\b/i.test(tag) && hasClass(tag, 'nav-dot'));
   const navTargets = navTags.map(tag => attribute(tag, 'data-target'));
   const expectedTargets = modules.map(module => module.id);
   if (navTargets.length !== expectedTargets.length || navTargets.some((target, index) => target !== expectedTargets[index])) {
@@ -352,11 +403,12 @@ async function build() {
   if (unsafeNavLabel) fail('nav data-tooltip and aria-label values must use generic "Module N" labels; keep module titles in text nodes.');
 
   const assembled = [base, ...modules.map(module => module.source), footer].join('');
-  const ids = idsIn(assembled);
+  const assembledTags = openingTags(assembled, 'index.html');
+  const ids = idsIn(assembledTags);
   const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
   if (duplicateIds.length) fail(`duplicate HTML ids: ${duplicateIds.join(', ')}.`);
 
-  const usedClaims = new Set(claimIdsIn(assembled));
+  const usedClaims = new Set(claimIdsIn(assembledTags));
   const unknownClaims = [...usedClaims].filter(id => !ledgerClaims.has(id));
   if (unknownClaims.length) fail(`HTML references unknown evidence claims: ${unknownClaims.join(', ')}.`);
   const unusedClaims = [...ledgerClaims.keys()].filter(id => !usedClaims.has(id));
