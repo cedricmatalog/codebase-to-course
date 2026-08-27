@@ -18,6 +18,7 @@
     "Defines the repository's domain vocabulary at first meaningful use rather than assuming it",
     "Reports contribution conventions from CONTRIBUTING, CODEOWNERS, or templates when present, and marks them undocumented when absent",
     "Every substantive claim carries a data-claim-id anchor resolving to an evidence record with a status of verified, inferred, unverified, or undocumented",
-    "Recommends one low-risk first contribution with likely files, validation steps, and remaining risks, without implying maintainer approval"
+    "Recommends one low-risk first contribution with likely files, validation steps, and remaining risks, without implying maintainer approval",
+    "When a behaviour question is owned by a dependency rather than repository code, names the package and its resolved version, states the behaviour is defined there, and does not guess what the dependency does"
   ]
 }

@@ -81,6 +81,8 @@ Rules:
 - Never upgrade `inferred`, `unverified`, or `undocumented` through confident prose.
 - Describe inferred claims with explicit qualifiers such as “appears to” or “the source suggests.”
 - A missing workflow remains `undocumented`; do not substitute convention.
+- Behaviour owned by a dependency cannot be `verified` from this repository. Record what the repository shows — the package, its resolved version, and where it is invoked — and mark the behavioural claim `undocumented` here, naming the tool that defines it.
+- Evidence that was never fetched is not evidence of absence. If history was truncated by a shallow clone, say so in the claim rather than reporting the rationale as undocumented.
 - Architectural rationale is `verified` only when explicit documentation, an ADR, a comment, or other direct evidence states the reason.
 - Recommendations are labeled recommendations, not facts. Cite the evidence that makes them low risk and list remaining risks.
 

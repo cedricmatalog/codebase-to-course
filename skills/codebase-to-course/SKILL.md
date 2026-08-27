@@ -64,7 +64,8 @@ For a GitHub URL:
 1. Accept only a validated `https://github.com/<owner>/<repository>` URL, with an optional `.git` suffix. Do not accept options, shell fragments, alternate transports, or arbitrary remote helpers as a GitHub URL.
 2. Create a new unique temporary directory with the host platform's temporary-directory facility. Never build a path from the repository name, never use a fixed `/tmp/<name>`, and never reuse an existing directory.
 3. Invoke Git with structured arguments equivalent to `git clone -- <validated-url> <empty-destination>`. Never interpolate the URL into a shell command string.
-4. Record the canonical URL and checked-out full commit SHA. Clean up the temporary clone after generation unless the user explicitly asks to keep it.
+4. Clone the full history by default. History is evidence: commit messages, merge descriptions, and blame are the only sources that can make a "why" claim `verified`. A shallow clone silently removes them, and a course generated from one will report rationale as undocumented when it is merely unfetched. If size or time forces `--depth`, say so in the handoff and mark every rationale claim `undocumented` with that reason, rather than letting a truncated clone look like a repository that documents nothing.
+5. Record the canonical URL and checked-out full commit SHA. Clean up the temporary clone after generation unless the user explicitly asks to keep it.
 
 If cloning or temporary directories are unavailable, ask the user for a local checkout. Do not substitute web summaries for source inspection.
 
@@ -130,6 +131,12 @@ Read enough of each entry to say what it is, what it owns, and how it relates to
 - where a new thing goes: the placement convention for an additional endpoint, command, test, component, or migration, inferred from where the existing ones live and from any structure the documentation states. This is what carries a newcomer from their first change to their tenth
 - the contribution conventions this team expects: `CONTRIBUTING`, `CODEOWNERS`, pull-request and issue templates, commit or branch conventions, review expectations, and where a newcomer is told to ask questions
 - one low-risk first-contribution candidate with likely files, validation steps, dependencies, and risks
+
+### When the trace leaves the repository
+
+A trace often bottoms out in a dependency rather than in repository code: a script resolves to a build tool's executor, routing is owned by a framework, migration behaviour belongs to an ORM. The repository cannot answer what happens next, and neither can inference from it.
+
+Name the boundary instead of guessing across it. Say which package owns the behaviour, give its resolved version from the manifest or lockfile, and state that the answer is defined there rather than here. A claim about a dependency's behaviour is never `verified` from this repository's evidence; it is `undocumented` here, and the course points the learner at the tool that owns it. Reading one resolved version for a named direct dependency is normal evidence gathering and is not the lockfile enumeration that `gotchas.md` warns against.
 
 Absence is a finding, not a gap to hide. A repository with no tests, no CI, or no deployment path gets that stated as `undocumented` with the evidence that establishes the absence. That is a turned stone; silence is not.
 

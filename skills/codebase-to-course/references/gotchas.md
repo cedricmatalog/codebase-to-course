@@ -57,6 +57,14 @@ Establish from evidence which loop this repository actually has — a watching d
 
 Source structure can show what the system does; it rarely proves why maintainers chose it. Cite explicit rationale or mark the explanation inferred or undocumented.
 
+### Shallow clone mistaken for a silent repository
+
+A `--depth` clone removes the commit messages, merge descriptions, and blame that carry recorded rationale. The result looks identical to a repository that documents nothing, and the course confidently reports "undocumented" for reasons that are one full fetch away. Clone fully by default; if you cannot, say which evidence was never fetched.
+
+### Guessing past the repository boundary
+
+When a script resolves to a build tool, or behaviour is owned by a framework or ORM, the repository has stopped answering. Name the package and its resolved version, say the behaviour is defined there, and stop. A confident sentence about what a dependency does, written from the dependency's reputation rather than from evidence, is the same failure as inventing rationale.
+
 ### Citation drift
 
 Create evidence records while reading. Do not add file paths or line ranges later from memory. Before handoff, confirm every citation against the recorded source revision and ensure excerpts still match.
