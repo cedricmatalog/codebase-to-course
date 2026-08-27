@@ -73,6 +73,37 @@ try {
   }
   await assert.rejects(stat(join(hostileFixture, 'EXECUTED.marker')), 'the hostile fixture recorded an executed repository command; a previous evaluation run breached the trust boundary.');
 
+  const excerptScript = join(repoRoot, 'skills', 'codebase-to-course', 'scripts', 'excerpt-hash.mjs');
+  const stalenessScript = join(repoRoot, 'skills', 'codebase-to-course', 'scripts', 'check-staleness.mjs');
+  const staleRepo = join(scratchRoot, 'stale-source');
+  const staleCourse = join(scratchRoot, 'stale-course');
+  await mkdir(join(staleRepo, 'src'), { recursive: true });
+  await mkdir(staleCourse, { recursive: true });
+  const sourceFile = join(staleRepo, 'src', 'lib.js');
+  await writeFile(sourceFile, 'export function a() {\n  return 1;\n}\n\nexport function b() {\n  return 2;\n}\n');
+  const excerptHash = run(process.execPath, [excerptScript, sourceFile, '1', '3']).trim();
+  assert.match(excerptHash, /^[0-9a-f]{64}$/, 'excerpt-hash did not emit a SHA-256 digest.');
+  assert.equal(run(process.execPath, [excerptScript, sourceFile, '1', '3']).trim(), excerptHash, 'excerpt-hash is not deterministic.');
+  assert.notEqual(run(process.execPath, [excerptScript, sourceFile, '5', '7']).trim(), excerptHash, 'excerpt-hash ignored the line range.');
+  await writeFile(join(staleCourse, 'course-manifest.json'), JSON.stringify({ generator: 'codebase-to-course', claim_ledger: 'evidence.json', source_revision: baseRevision, source_fingerprint: null }));
+  await writeFile(join(staleCourse, 'evidence.json'), JSON.stringify({
+    schema_version: 1,
+    claims: [{ id: 'C-001', claim: 'Function a returns one.' }],
+    evidence: [{ id: 'E-001', kind: 'source', path: 'src/lib.js', line_start: 1, line_end: 3, content_hash: excerptHash, supports: ['C-001'] }]
+  }));
+  const currentCheck = spawnSync(process.execPath, [stalenessScript, staleCourse, staleRepo], { encoding: 'utf8' });
+  assert.equal(currentCheck.status, 0, `staleness check failed on an unchanged repository: ${currentCheck.stdout}${currentCheck.stderr}`);
+  assert.match(currentCheck.stdout, /The course is current/, 'staleness check did not report a current course.');
+  await writeFile(sourceFile, 'export function a() {\n  return 42;\n}\n\nexport function b() {\n  return 2;\n}\n');
+  const driftedCheck = spawnSync(process.execPath, [stalenessScript, staleCourse, staleRepo], { encoding: 'utf8' });
+  assert.equal(driftedCheck.status, 1, 'staleness check did not fail after the source changed.');
+  assert.match(driftedCheck.stdout, /DRIFTED E-001 src\/lib\.js/, 'staleness check did not name the drifted evidence record.');
+  assert.match(driftedCheck.stdout, /affects C-001/, 'staleness check did not name the affected claim.');
+  await rm(sourceFile);
+  const missingCheck = spawnSync(process.execPath, [stalenessScript, staleCourse, staleRepo], { encoding: 'utf8' });
+  assert.equal(missingCheck.status, 1, 'staleness check passed despite deleted evidence.');
+  assert.match(missingCheck.stdout, /UNRESOLVABLE E-001/, 'staleness check did not flag deleted evidence as unresolvable.');
+
   const fixtureOutput = run(process.execPath, [join(repoRoot, 'scripts', 'verify-template.mjs')], {
     env: { ...process.env, KEEP_COURSE_FIXTURE: '1' }
   });
@@ -89,6 +120,7 @@ try {
   summary = {
     escapeHtml: 'passed (function, stdin, file)',
     evidenceFingerprint: 'passed (stable ordering, byte drift, path traversal)',
+    stalenessCheck: 'passed (current, drifted, unresolvable)',
     builder: fixture.build,
     browser: {
       desktopModules: browser.desktop.modules,

@@ -50,6 +50,8 @@ jobs:
           test -f "$skill_dir/references/evidence-contract.md"
           test -f "$skill_dir/scripts/escape-html.mjs"
           test -f "$skill_dir/scripts/fingerprint-evidence.mjs"
+          test -f "$skill_dir/scripts/excerpt-hash.mjs"
+          test -f "$skill_dir/scripts/check-staleness.mjs"
           node --check "$skill_dir/references/build.mjs"
 
           unexpected="$(find "$skill_dir" -mindepth 1 -maxdepth 1 \

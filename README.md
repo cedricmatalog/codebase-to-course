@@ -54,7 +54,7 @@ Generated courses may include source excerpts, paths, commands, architecture des
 │       ├── SKILL.md
 │       ├── agents/openai.yaml
 │       ├── references/
-│       └── scripts/                 # Trusted escaping/fingerprint helpers
+│       └── scripts/                 # Trusted escaping, fingerprint, excerpt-hash, and staleness helpers
 ├── evaluations/                # Skill scenario evaluations and the hostile fixture
 ├── scripts/                    # Maintainer validation tooling
 ├── .github/workflows/          # CI checks

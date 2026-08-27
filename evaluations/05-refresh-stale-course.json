@@ -1,0 +1,14 @@
+{
+  "skills": ["codebase-to-course"],
+  "source": "any repository with an existing generated course whose cited files have since changed",
+  "query": "This onboarding course was generated a while ago. Is it still accurate, and can you bring it up to date?",
+  "expected_behavior": [
+    "Runs the installed check-staleness helper against the published course and the current repository rather than regenerating from scratch",
+    "Reports which evidence records drifted and which claims rest on them, distinguishing drift from evidence that cannot be resolved at all",
+    "Re-reads each drifted file at the current revision and revises the affected claims, adjusting status where the new evidence no longer supports the old claim",
+    "Recomputes content_hash with the excerpt-hash helper rather than by hand",
+    "Leaves modules whose evidence still matches untouched",
+    "Updates provenance and generated_at, and rebuilds through the staging and manifest-ownership rules rather than overwriting the published course in place",
+    "Tells the user which claims changed and which held"
+  ]
+}

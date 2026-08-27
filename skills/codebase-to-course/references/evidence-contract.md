@@ -105,10 +105,17 @@ Requirements:
 
 - Paths are repository-relative POSIX-style paths. Do not expose temporary clone paths or unrelated absolute user paths in course content.
 - Line ranges refer to the recorded analysis identity. Recheck them immediately before assembly.
-- `content_hash` is a 64-character lowercase SHA-256 hex digest covering the exact source bytes used by the excerpt, before HTML escaping.
-- Evidence records may describe documentation, manifests, CI definitions, source, tests, or read-only provenance metadata.
+- `content_hash` is a 64-character lowercase SHA-256 hex digest covering the exact source bytes used by the excerpt, before HTML escaping. The excerpt bytes run from the first character of `line_start` through the last character of `line_end`, including the line terminators between them and excluding the terminator that ends `line_end`. A record with no line range hashes the whole file. Compute it with the trusted helper so authoring and staleness checking agree:
+
+  ```text
+  node <installed-skill>/scripts/excerpt-hash.mjs <file> <line-start> <line-end>
+  ```
+
+  A hand-computed hash that frames the bytes differently is not merely wrong once; it makes every later staleness check meaningless.
+- Evidence records may describe documentation, manifests, CI definitions, source, tests, read-only provenance metadata, or recorded history. Use `kind: "git-history"` for a commit message, merge description, or blame result, and put the revision in `path` context rather than inventing a file path for it.
+- Recorded history is the strongest evidence for a "why" claim and the weakest for a "what" claim: a commit message describes intent at the time of writing, not current behavior. Never let it override what the source says today.
 - Do not record secret values, secret-bearing excerpts, personal tokens, credentials, private keys, cookies, or auth caches.
-- If evidence disappears or changes, mark dependent claims stale and stop assembly until they are revised.
+- If evidence disappears or changes, mark dependent claims stale and stop assembly until they are revised. After publication, `scripts/check-staleness.mjs` performs this comparison against a live repository; see “Refreshing an existing course” in `SKILL.md`.
 
 ## 4. Commands
 
