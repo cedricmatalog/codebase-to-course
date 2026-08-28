@@ -1,4 +1,0 @@
-interface:
-  display_name: "Codebase to Course"
-  short_description: "Create interactive developer onboarding courses"
-  default_prompt: "Use $codebase-to-course to create an interactive developer onboarding course for this repository."

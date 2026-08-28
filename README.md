@@ -1,97 +1,92 @@
 # Codebase to Course
 
-Codebase to Course is an Agent Skill that turns repository evidence into an interactive developer-onboarding course. The installable skill is located at [`skills/codebase-to-course/`](skills/codebase-to-course/); root-level scripts and package metadata are maintainer tooling and are not part of the skill payload.
+A Claude Code skill that turns any codebase into a beautiful, interactive single-page HTML course.
 
-> **RELEASE BLOCKED:** This project is derived from Zara Zhang's original Codebase to Course repository, which currently provides no license granting redistribution or modification rights. Public distribution, marketplace publication, and claims that this fork is live or safe to install are blocked until the maintainer obtains explicit permission or a compatible upstream license. This repository does not invent or imply a license.
+Point it at a repo. Get back a stunning, self-contained course that teaches how the code works — with scroll-based navigation, animated visualizations, embedded quizzes, and code-with-plain-English side-by-side translations.
 
-## Install and use
+## Who is this for?
 
-The intended one-command Codex install, once redistribution permission or licensing is in place, is:
+**"Vibe coders"** — people who build software by instructing AI coding tools in natural language, without a traditional CS education.
 
-```bash
-npx skills add cedricmatalog/codebase-to-course -g -a codex -y
+You've built something (or found something cool on GitHub). It works. But you don't really understand *how* it works under the hood. This skill generates a course that teaches you — not by lecturing, but by tracing what happens when you actually use the app.
+
+**Your goals are practical, not academic:**
+- Steer AI coding tools better (make smarter architectural decisions)
+- Detect when AI is wrong (spot hallucinations, catch bad patterns)
+- Debug when AI gets stuck (break out of bug loops)
+- Talk to engineers without feeling lost
+
+You're not trying to become a software engineer. You want coding as a superpower.
+
+## What the course looks like
+
+The output is a **single HTML file** — no dependencies, no setup, works offline. It includes:
+
+- **Scroll-based modules** with progress tracking and keyboard navigation
+- **Code ↔ Plain English translations** — real code on the left, what it means on the right
+<img width="720" alt="Code translation block" src="https://github.com/user-attachments/assets/fb9e7fac-05c1-4f98-b80c-46543ef81afc" />
+
+- **Animated visualizations** — data flow animations, group chat between components, architecture diagrams
+<img width="720" alt="Animated data flow" src="https://github.com/user-attachments/assets/20fb403e-7dfd-4a47-989b-bbae86ca8041" />
+
+- **Interactive quizzes** that test *application* not memorization ("You want to add favorites — which files change?")
+<img width="720" alt="Interactive quiz" src="https://github.com/user-attachments/assets/57706496-9fa8-457a-8450-3da22789951c" />
+
+- **Glossary tooltips** — hover any technical term for a plain-English definition
+<img width="720" alt="Glossary tooltip" src="https://github.com/user-attachments/assets/ac2f160a-d73f-4779-97b2-a06fdb5f3227" />
+
+  
+- **Warm, distinctive design** — not the typical purple-gradient AI look
+
+## How to use
+
+### As a Claude Code skill
+
+1. Copy the `codebase-to-course` folder into `~/.claude/skills/`
+2. Open any project in Claude Code
+3. Say: *"Turn this codebase into an interactive course"*
+
+### Trigger phrases
+
+- "Turn this into a course"
+- "Explain this codebase interactively"
+- "Make a course from this project"
+- "Teach me how this code works"
+- "Interactive tutorial from this code"
+
+## Design philosophy
+
+### Build first, understand later
+
+This inverts traditional CS education. The old way: memorize concepts for years → eventually build something → finally see the point (most people quit before step 3). This way: **build something → experience it working → now understand how it works.**
+
+### Show, don't tell
+
+Every screen is at least 50% visual. Max 2-3 sentences per text block. If something can be a diagram, animation, or interactive element — it shouldn't be a paragraph.
+
+### Quizzes test doing, not knowing
+
+No "What does API stand for?" Instead: "A user reports stale data after switching pages. Where would you look first?" Quizzes test whether you can *use* what you learned to solve a new problem.
+
+### No recycled metaphors
+
+Each concept gets a metaphor that fits *that specific idea*. A database is a library with a card catalog. Auth is a bouncer checking IDs. API rate limiting is a nightclub with a capacity limit. Never the same metaphor twice.
+
+### Original code only
+
+Code snippets are exact copies from the real codebase — never modified or simplified. The learner should be able to open the actual file and see the same code they learned from.
+
+## Skill structure
+
+```
+codebase-to-course/
+├── SKILL.md                          # Main skill instructions
+└── references/
+    ├── design-system.md              # CSS tokens, typography, colors, layout
+    └── interactive-elements.md       # Quiz, animation, and visualization patterns
 ```
 
-For another supported coding agent, omit `-a codex -y` and choose the agent interactively.
 
-Then open your coding agent inside the repository you want to learn and use:
+---
 
-```text
-Use the codebase-to-course skill to create an interactive developer onboarding
-course for this repository. Focus on setup, architecture, one key request flow,
-testing and debugging, and a first safe contribution.
-```
-
-The open `skills` CLI discovers the skill from `skills/codebase-to-course/SKILL.md`. A project-local preview of discovery is:
-
-```bash
-npx skills add . --list
-```
-
-Do not publish or redistribute an installation while the release block above remains unresolved.
-
-## Release checklist
-
-1. Obtain written permission from the upstream copyright holder or wait for an upstream license that clearly permits this fork's modification and redistribution. Record the permission; do not guess at a license.
-2. If you want this repository to stop appearing as a GitHub fork, follow GitHub's [detaching-a-fork procedure](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/detaching-a-fork). Detaching changes GitHub's repository relationship only; it does not remove attribution, copyright, or license obligations.
-3. Run the validation commands below and require the `Validate` workflow to pass on the exact release commit.
-4. Run every scenario in `evaluations/` against each model tier the skill is expected to support, and record the results. `npm test` checks that the evaluations are well formed; it cannot run them, because grading requires observing an agent.
-5. From a clean temporary directory, verify `npx skills add cedricmatalog/codebase-to-course --list`, install it, and confirm that only `skills/codebase-to-course/` is delivered.
-6. Only after steps 1–5, update the release notice and announce the install command.
-
-## What the skill is designed to produce
-
-The skill instructs an agent to analyze a target repository, distinguish verified facts from inference, and generate a static course directory containing an assembled `index.html`, shared CSS and JavaScript, and authored module fragments. Intended course topics include setup, architecture, a real execution path, testing and debugging evidence, and a scoped first contribution.
-
-Generated courses may include source excerpts, paths, commands, architecture descriptions, and inferred behavior from the target repository. They must be reviewed by a person familiar with that repository before being treated as onboarding or operational documentation.
-
-## Repository structure
-
-```text
-.
-├── skills/
-│   └── codebase-to-course/
-│       ├── SKILL.md
-│       ├── agents/openai.yaml
-│       ├── references/
-│       └── scripts/                 # Trusted escaping, fingerprint, excerpt-hash, and staleness helpers
-├── evaluations/                # Skill scenario evaluations and the hostile fixture
-├── scripts/                    # Maintainer validation tooling
-├── .github/workflows/          # CI checks
-├── package.json                # Private maintainer tooling only
-└── README.md
-```
-
-## Validation
-
-Maintainers use Node.js and npm for repository checks. Browser binaries are not installed by `npm ci`; install Chromium separately before the full test run:
-
-```bash
-npm ci
-npx playwright install chromium
-npm test
-```
-
-`npm test` runs static syntax checks and `node scripts/test.mjs`, which owns the end-to-end maintainer validation flow and verifies that the scenario evaluations in `evaluations/` are well formed. CI repeats these checks and performs a local `npx skills` discovery/install smoke check to confirm that the intended skill is discoverable and internal artifacts are not included in the installed payload.
-
-Validation provides evidence about the committed templates, assembly, and tested browser paths. It does not prove that every generated course is accurate, secure, accessible, or appropriate for a target repository; generated output still requires human review.
-
-Artifact tests cannot observe agent behaviour. The scenario evaluations in [`evaluations/`](evaluations/) cover what the agent does with the skill — coverage that scales to the repository, an intact trust boundary against a hostile fixture, and correct provenance for a non-Git source. They are graded by a person against each scenario's `expected_behavior` list; see [`evaluations/README.md`](evaluations/README.md).
-
-## Security
-
-Treat the skill as instructions for an agent with access to the target repository and its available tools:
-
-- Review requested filesystem, shell, network, and Git operations before approving them.
-- Do not expose secret values. Environment-variable names may be documented, but credentials and local secret files must not be copied into a course.
-- Review generated source excerpts and architecture details before sharing a course outside the target repository's authorized audience.
-- Treat setup, test, clone, and validation commands as untrusted until they are traced to repository evidence and judged appropriate for the current environment.
-- Report suspected security issues privately to the repository maintainer rather than placing sensitive details in a public issue.
-
-No security audit or public safety guarantee is claimed while release remains blocked.
-
-## Provenance
-
-Originally created by [Zara Zhang](https://github.com/zarazhangrui/codebase-to-course). This fork reorganizes the project as a multi-skill-compatible repository and adds a portable course runtime, accessibility and interaction work, validation tooling, and a developer-onboarding workflow.
-
-Attribution records origin; it is not a substitute for a license. The upstream repository currently exposes no license, so explicit permission or a compatible upstream license is required before this fork can be publicly distributed.
+Built by [Zara](https://x.com/zarazhangrui) with Claude Code.

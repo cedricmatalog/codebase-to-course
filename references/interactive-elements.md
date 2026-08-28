@@ -2,7 +2,7 @@
 
 Implementation patterns for every interactive element type used in courses. Pick the elements that best serve each module's teaching goal.
 
-> **Architecture and safety note:** All CSS and JavaScript for these elements already live in `references/styles.css` and `references/main.js`, which are copied verbatim into every course directory. **Write only the HTML patterns below.** The CSS blocks in this document describe what the shipped stylesheet already provides so you can predict the rendering — they are documentation, not code to copy; the builder rejects any module containing `<style>` or `<script>`. Repository-derived prose and source text belongs in escaped text nodes, including the hidden text nodes shown here. `data-*`, `id`, `class`, and ARIA attributes may contain only fixed author-created identifiers or generic template labels, plus the `data-claim-id` anchors defined in `evidence-contract.md`. No attribute value may contain a raw `<` or `>`. The builder rejects the legacy prose-bearing attributes.
+> **Architecture note:** All CSS and JavaScript for these elements live in `references/styles.css` and `references/main.js`, which are copied verbatim into every course directory. When writing module HTML files, use only the HTML patterns below — do **not** inline `<style>` or `<script>` tags for these elements. The engines in `main.js` auto-initialize on page load by scanning for the relevant class names and `data-*` attributes described here.
 
 ## Table of Contents
 1. [Code ↔ English Translation Blocks](#code--english-translation-blocks)
@@ -22,7 +22,6 @@ Implementation patterns for every interactive element type used in courses. Pick
 15. [Visual File Tree](#visual-file-tree)
 16. [Icon-Label Rows](#icon-label-rows)
 17. [Numbered Step Cards](#numbered-step-cards)
-18. [Instruction and Optional-Practice Wrappers](#instruction-and-optional-practice-wrappers)
 
 ---
 
@@ -73,20 +72,20 @@ The most important teaching element. Shows real code from the project on the lef
   font-size: var(--text-sm);
   line-height: 1.7;
   position: relative;
-  overflow-x: auto;  /* contain long lines without changing source indentation */
+  overflow-x: hidden;  /* NO horizontal scrollbar — ever */
 }
 .translation-code pre,
 .translation-code code {
-  white-space: pre;
-  word-break: normal;
-  overflow-wrap: normal;
+  white-space: pre-wrap;       /* wrap long lines instead of scrolling */
+  word-break: break-word;      /* break mid-word if needed */
+  overflow-x: hidden;
 }
 .translation-english {
   background: var(--color-surface-warm);
   padding: var(--space-6);
   font-size: var(--text-sm);
   line-height: 1.7;
-  border-left: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
 }
 .translation-label {
   position: absolute;
@@ -95,7 +94,7 @@ The most important teaching element. Shows real code from the project on the lef
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #A6ADC8;
+  opacity: 0.5;
 }
 .translation-english .translation-label {
   color: var(--color-text-muted);
@@ -103,7 +102,7 @@ The most important teaching element. Shows real code from the project on the lef
 /* Responsive: stack vertically on mobile */
 @media (max-width: 768px) {
   .translation-block { grid-template-columns: 1fr; }
-  .translation-english { border-left: none; border-top: 1px solid var(--color-border); }
+  .translation-english { border-left: none; border-top: 3px solid var(--color-accent); }
 }
 ```
 
@@ -118,34 +117,35 @@ The most important teaching element. Shows real code from the project on the lef
 
 For testing understanding with instant feedback. Each question has options, one correct answer, and per-question explanations.
 
-**Wiring:** `main.js` auto-initializes the options and the `.quiz-check-btn` / `.quiz-reset-btn` controls inside every uniquely identified `.quiz-container`. Put per-question explanations in hidden `.quiz-explanation-right` and `.quiz-explanation-wrong` text nodes.
+**Wiring:** `main.js` exposes `window.selectOption(btn)`, `window.checkQuiz(containerId)`, and `window.resetQuiz(containerId)`. Call them via `onclick`. Per-question explanations go in `data-explanation-right` and `data-explanation-wrong` on the `.quiz-question-block`.
 
 **HTML:**
 ```html
 <div class="quiz-container" id="quiz-module3">
-  <div class="quiz-question-block" data-correct="option-b">
+  <div class="quiz-question-block"
+       data-correct="option-b"
+       data-explanation-right="Exactly — because X is responsible for Y in this architecture."
+       data-explanation-wrong="Not quite. Think about where Y lives in the codebase...">
     <h3 class="quiz-question">Question text here?</h3>
     <div class="quiz-options">
-      <button class="quiz-option" type="button" data-value="option-a">
-        <span class="quiz-option-radio" aria-hidden="true"></span>
+      <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+        <div class="quiz-option-radio"></div>
         <span>Answer A</span>
       </button>
-      <button class="quiz-option" type="button" data-value="option-b">
-        <span class="quiz-option-radio" aria-hidden="true"></span>
+      <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+        <div class="quiz-option-radio"></div>
         <span>Answer B (correct)</span>
       </button>
-      <button class="quiz-option" type="button" data-value="option-c">
-        <span class="quiz-option-radio" aria-hidden="true"></span>
+      <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+        <div class="quiz-option-radio"></div>
         <span>Answer C</span>
       </button>
     </div>
-    <p class="quiz-explanation-right" hidden>Exactly—because X is responsible for Y in this architecture.</p>
-    <p class="quiz-explanation-wrong" hidden>Not quite. Review where Y lives, then try again.</p>
     <div class="quiz-feedback"></div>
   </div>
 
-  <button class="quiz-check-btn" type="button">Check answers</button>
-  <button class="quiz-reset-btn" type="button">Try again</button>
+  <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+  <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
 </div>
 ```
 
@@ -167,7 +167,7 @@ For testing understanding with instant feedback. Each question has options, one 
 .quiz-option-radio {
   width: 18px; height: 18px; border-radius: 50%;
   border: 2px solid var(--color-border);
-  transition: border-color var(--duration-fast), background var(--duration-fast), box-shadow var(--duration-fast);
+  transition: all var(--duration-fast);
 }
 .quiz-option.selected .quiz-option-radio {
   border-color: var(--color-accent);
@@ -187,30 +187,96 @@ For testing understanding with instant feedback. Each question has options, one 
 
 ## Drag-and-Drop Matching
 
-For matching concepts to descriptions. Supports mouse drag, tap-to-place, and keyboard select/place using the same controls.
+For matching concepts to descriptions. Supports both mouse (HTML5 Drag API) and touch.
 
 **HTML:**
 ```html
-<div class="dnd-container" id="dnd-module2">
+<div class="dnd-container">
   <div class="dnd-chips">
-    <button class="dnd-chip" type="button" draggable="true" data-answer="actor-a">Actor A</button>
-    <button class="dnd-chip" type="button" draggable="true" data-answer="actor-b">Actor B</button>
-    <button class="dnd-chip" type="button" draggable="true" data-answer="actor-c">Actor C</button>
+    <div class="dnd-chip" draggable="true" data-answer="actor-a">Actor A</div>
+    <div class="dnd-chip" draggable="true" data-answer="actor-b">Actor B</div>
+    <div class="dnd-chip" draggable="true" data-answer="actor-c">Actor C</div>
   </div>
   <div class="dnd-zones">
     <div class="dnd-zone" data-correct="actor-a">
       <p class="dnd-zone-label">Description for Actor A</p>
-      <button class="dnd-zone-target" type="button">Place an item here</button>
+      <div class="dnd-zone-target">Drop here</div>
     </div>
     <!-- more zones -->
   </div>
-  <button class="btn btn-primary dnd-check-btn" type="button">Check matches</button>
-  <button class="btn dnd-reset-btn" type="button">Reset</button>
-  <p class="dnd-feedback" role="status" aria-live="polite">Select an item to begin.</p>
+  <button onclick="checkDnD()">Check Matches</button>
+  <button onclick="resetDnD()">Reset</button>
 </div>
 ```
 
-`main.js` owns all drag, selection, replacement, checking, and reset behavior. Do not add custom touch handlers; tap-to-place is the reliable mobile path.
+**JS (mouse + touch):**
+```javascript
+// MOUSE: HTML5 Drag API
+chips.forEach(chip => {
+  chip.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', chip.dataset.answer);
+    chip.classList.add('dragging');
+  });
+  chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+});
+
+zones.forEach(zone => {
+  const target = zone.querySelector('.dnd-zone-target');
+  target.addEventListener('dragover', (e) => { e.preventDefault(); target.classList.add('drag-over'); });
+  target.addEventListener('dragleave', () => target.classList.remove('drag-over'));
+  target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    target.classList.remove('drag-over');
+    const answer = e.dataTransfer.getData('text/plain');
+    const chip = document.querySelector(`[data-answer="${answer}"]`);
+    target.textContent = chip.textContent;
+    target.dataset.placed = answer;
+    chip.classList.add('placed');
+  });
+});
+
+// TOUCH: Custom implementation (HTML5 drag doesn't work on mobile)
+chips.forEach(chip => {
+  chip.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const clone = chip.cloneNode(true);
+    clone.classList.add('touch-ghost');
+    clone.style.cssText = `position:fixed; z-index:1000; pointer-events:none;
+      left:${touch.clientX - 40}px; top:${touch.clientY - 20}px;`;
+    document.body.appendChild(clone);
+    chip._ghost = clone;
+    chip._answer = chip.dataset.answer;
+  }, { passive: false });
+
+  chip.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    if (chip._ghost) {
+      chip._ghost.style.left = (touch.clientX - 40) + 'px';
+      chip._ghost.style.top = (touch.clientY - 20) + 'px';
+    }
+    // Highlight zone under finger
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    zones.forEach(z => z.querySelector('.dnd-zone-target').classList.remove('drag-over'));
+    if (el && el.closest('.dnd-zone-target')) {
+      el.closest('.dnd-zone-target').classList.add('drag-over');
+    }
+  }, { passive: false });
+
+  chip.addEventListener('touchend', (e) => {
+    if (chip._ghost) { chip._ghost.remove(); chip._ghost = null; }
+    const touch = e.changedTouches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (el && el.closest('.dnd-zone-target')) {
+      const target = el.closest('.dnd-zone-target');
+      target.textContent = chip.textContent;
+      target.dataset.placed = chip._answer;
+      chip.classList.add('placed');
+    }
+  });
+});
+```
 
 ---
 
@@ -224,7 +290,7 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
 ```html
 <div class="chat-window" id="chat-module2">
   <div class="chat-messages">
-    <div class="chat-message" data-msg="0" data-sender="actor-a">
+    <div class="chat-message" data-msg="0" data-sender="actor-a" style="display:none">
       <div class="chat-avatar" style="background: var(--color-actor-1)">A</div>
       <div class="chat-bubble">
         <span class="chat-sender" style="color: var(--color-actor-1)">Actor A</span>
@@ -234,8 +300,8 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
     <!-- more messages... -->
   </div>
 
-  <div class="chat-typing" hidden>
-    <div class="chat-avatar" id="chat-module2-typing-avatar">A</div>
+  <div class="chat-typing" id="chat-typing" style="display:none">
+    <div class="chat-avatar" id="typing-avatar">?</div>
     <div class="chat-typing-dots">
       <span class="typing-dot"></span>
       <span class="typing-dot"></span>
@@ -244,9 +310,9 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
   </div>
 
   <div class="chat-controls">
-    <button class="btn chat-next-btn" type="button">Next message</button>
-    <button class="btn chat-all-btn" type="button" aria-pressed="false">Play all</button>
-    <button class="btn chat-reset-btn" type="button">Replay</button>
+    <button class="btn chat-next-btn">Next Message</button>
+    <button class="btn chat-all-btn">Play All</button>
+    <button class="btn chat-reset-btn">Replay</button>
     <span class="chat-progress"></span>
   </div>
 </div>
@@ -273,44 +339,39 @@ iMessage/WeChat-style chat showing components "talking" to each other. Messages 
 
 Step-by-step visualization of data moving between components. User clicks "Next Step" to advance.
 
-**Wiring:** `main.js` auto-initializes every `.flow-animation` on page load and reads its steps from `.flow-step-data .flow-step` only, so the `<ol class="flow-step-data" hidden>` wrapper is required — the unrelated static [Flow Diagrams](#flow-diagrams) pattern reuses the `.flow-step` class name and would otherwise be picked up as walkthrough data. Each hidden `.flow-step` uses only fixed author-created actor IDs in `data-highlight`, `data-from`, and `data-to`; its human-readable description goes in a `.flow-step-text` text node. Actor element IDs must be fixed safe IDs such as `flow-m3-actor-1`. Control buttons need classes `.flow-next-btn` and `.flow-reset-btn`.
+**Wiring:** `main.js` auto-initializes every `.flow-animation` on page load. Pass steps as JSON in `data-steps`. Each step object: `{ highlight: "flow-actor-id", label: "description", packet: true, from: "actor-id-suffix", to: "actor-id-suffix" }`. Actor element IDs must be `flow-actor-1`, `flow-actor-2`, etc. Control buttons need classes `.flow-next-btn` and `.flow-reset-btn`.
+
+> **⚠️ Single quotes in step labels will break parsing.** The `data-steps` attribute is delimited by single quotes (`data-steps='[...]'`), so any single quote inside a label (e.g. `"the user's request"`) will terminate the attribute early and cause `JSON.parse` to fail silently — the entire animation will stop working. Either avoid apostrophes in labels, replace them with `&apos;`, or rewrite the attribute using double-quote delimiters with escaped inner quotes (`data-steps="[{\"label\":\"...\"}]"`).
 
 **HTML:**
 ```html
-<div class="flow-animation">
-  <ol class="flow-step-data" hidden>
-    <li class="flow-step" data-highlight="flow-m3-actor-1">
-      <span class="flow-step-text">The entry action reaches the first component.</span>
-    </li>
-    <li class="flow-step" data-highlight="flow-m3-actor-2" data-packet="true" data-from="m3-actor-1" data-to="m3-actor-2">
-      <span class="flow-step-text">The first component delegates the request.</span>
-    </li>
-    <li class="flow-step" data-highlight="flow-m3-actor-3" data-packet="true" data-from="m3-actor-2" data-to="m3-actor-3">
-      <span class="flow-step-text">The final component produces the documented result.</span>
-    </li>
-  </ol>
+<div class="flow-animation" data-steps='[
+  {"highlight":"flow-actor-1","label":"User clicks the button"},
+  {"highlight":"flow-actor-1","label":"Frontend sends request","packet":true,"from":"actor-1","to":"actor-2"},
+  {"highlight":"flow-actor-2","label":"Backend calls the database","packet":true,"from":"actor-2","to":"actor-3"}
+]'>
   <div class="flow-actors">
-    <div class="flow-actor" id="flow-m3-actor-1">
+    <div class="flow-actor" id="flow-actor-1">
       <div class="flow-actor-icon">A</div>
       <span>Actor 1</span>
     </div>
-    <div class="flow-actor" id="flow-m3-actor-2">
+    <div class="flow-actor" id="flow-actor-2">
       <div class="flow-actor-icon">B</div>
       <span>Actor 2</span>
     </div>
-    <div class="flow-actor" id="flow-m3-actor-3">
+    <div class="flow-actor" id="flow-actor-3">
       <div class="flow-actor-icon">C</div>
       <span>Actor 3</span>
     </div>
   </div>
 
-  <div class="flow-packet" aria-hidden="true"></div>
+  <div class="flow-packet" id="flow-packet"></div>
 
-  <div class="flow-step-label">Choose Next step to begin</div>
+  <div class="flow-step-label" id="flow-label">Click "Next Step" to begin</div>
 
   <div class="flow-controls">
-    <button class="btn flow-next-btn" type="button">Next step</button>
-    <button class="btn flow-reset-btn" type="button">Restart</button>
+    <button class="btn flow-next-btn">Next Step</button>
+    <button class="btn flow-reset-btn">Restart</button>
     <span class="flow-progress"></span>
   </div>
 </div>
@@ -319,10 +380,9 @@ Step-by-step visualization of data moving between components. User clicks "Next 
 **CSS for active actor glow:**
 ```css
 .flow-actor.active {
-  box-shadow: 0 0 0 3px var(--color-accent-light),
-              0 8px 24px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  box-shadow: 0 0 0 3px var(--color-accent), 0 0 20px rgba(217, 79, 48, 0.2);
   transform: scale(1.05);
-  transition: transform var(--duration-normal) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-out);
 }
 ```
 
@@ -330,27 +390,25 @@ Step-by-step visualization of data moving between components. User clicks "Next 
 
 ## Interactive Architecture Diagram
 
-Full-system diagram where hovering/clicking a component shows a description tooltip. This is the natural home for the internal dependency graph: one component per module, package, or workspace, with each description naming what it depends on and what depends on it.
+Full-system diagram where hovering/clicking a component shows a description tooltip.
 
 **HTML:**
 ```html
 <div class="arch-diagram">
   <div class="arch-zone arch-zone-browser">
     <h4 class="arch-zone-label">Browser</h4>
-    <button class="arch-component" type="button">
-      <span class="arch-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 13h6M9 17h6"/></svg>
-      </span>
+    <div class="arch-component" data-desc="Injects UI into the web page, reads DOM, captures user actions"
+         onclick="showArchDesc(this)">
+      <div class="arch-icon">📄</div>
       <span>Component A</span>
-      <span class="arch-component-description" hidden>Explain the component with evidence-backed text here.</span>
-    </button>
+    </div>
     <!-- more components -->
   </div>
   <div class="arch-zone arch-zone-external">
     <h4 class="arch-zone-label">External Services</h4>
     <!-- API cards -->
   </div>
-  <div class="arch-description">Choose a component to learn what it does.</div>
+  <div class="arch-description" id="arch-desc">Click any component to learn what it does</div>
 </div>
 ```
 
@@ -364,18 +422,18 @@ Shows how different layers (e.g., HTML/CSS/JS, or data/logic/UI) build on each o
 ```html
 <div class="layer-demo">
   <div class="layer-tabs">
-    <button class="layer-tab active" type="button" data-layer="html">HTML</button>
-    <button class="layer-tab" type="button" data-layer="css">+ CSS</button>
-    <button class="layer-tab" type="button" data-layer="js">+ JS</button>
+    <button class="layer-tab active" onclick="showLayer('html')">HTML</button>
+    <button class="layer-tab" onclick="showLayer('css')">+ CSS</button>
+    <button class="layer-tab" onclick="showLayer('js')">+ JS</button>
   </div>
   <div class="layer-viewport">
-    <div class="layer" id="layer-html">
+    <div class="layer" id="layer-html" style="display:block">
       <!-- Raw unstyled version -->
     </div>
-    <div class="layer" id="layer-css" hidden>
+    <div class="layer" id="layer-css" style="display:none">
       <!-- Styled version -->
     </div>
-    <div class="layer" id="layer-js" hidden>
+    <div class="layer" id="layer-js" style="display:none">
       <!-- Interactive version -->
     </div>
   </div>
@@ -394,37 +452,47 @@ Show code with a deliberate bug. User clicks the buggy line. Reveal explains the
 <div class="bug-challenge">
   <h3>Find the bug in this code:</h3>
   <div class="bug-code">
-    <button class="bug-line" type="button" data-line="1" data-correct="false">
+    <div class="bug-line" data-line="1" onclick="checkBugLine(this, false)">
       <span class="line-num">1</span>
       <code>chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {</code>
-      <span class="bug-hint" hidden>Not this line—look for where asynchronous timing changes the response.</span>
-    </button>
-    <button class="bug-line" type="button" data-line="2" data-correct="false">
+    </div>
+    <div class="bug-line" data-line="2" onclick="checkBugLine(this, false)">
       <span class="line-num">2</span>
       <code>  if (msg.action === 'fetchData') {</code>
-      <span class="bug-hint" hidden>This condition is valid. Look at the asynchronous work instead.</span>
-    </button>
-    <button class="bug-line bug-target" type="button" data-line="3" data-correct="true">
+    </div>
+    <div class="bug-line bug-target" data-line="3" onclick="checkBugLine(this, true)">
       <span class="line-num">3</span>
       <code>    fetch(url).then(r => r.json()).then(data => sendResponse(data));</code>
-      <span class="bug-explanation" hidden>The asynchronous response needs the message channel to remain open. Add return true at the end of the listener.</span>
-    </button>
-    <button class="bug-line" type="button" data-line="4" data-correct="false">
+    </div>
+    <div class="bug-line" data-line="4" onclick="checkBugLine(this, false)">
       <span class="line-num">4</span>
       <code>  }</code>
-      <span class="bug-hint" hidden>This brace only closes the condition. Look for the missing asynchronous return value.</span>
-    </button>
-    <button class="bug-line" type="button" data-line="5" data-correct="false">
+    </div>
+    <div class="bug-line" data-line="5" onclick="checkBugLine(this, false)">
       <span class="line-num">5</span>
       <code>});</code>
-      <span class="bug-hint" hidden>This closes the listener. The missing behavior belongs immediately before it.</span>
-    </button>
+    </div>
   </div>
   <div class="bug-feedback" id="bug-feedback"></div>
 </div>
 ```
 
-`main.js` reads the fixed `data-correct` identifier plus the hidden hint/explanation text nodes, then handles focus, disabling, feedback, and recovery automatically.
+**JS:**
+```javascript
+window.checkBugLine = function(el, isCorrect) {
+  const feedback = el.closest('.bug-challenge').querySelector('.bug-feedback');
+  if (isCorrect) {
+    el.classList.add('correct');
+    feedback.innerHTML = '<strong>Found it!</strong> The listener uses an async operation (fetch) but doesn\'t return true. Chrome closes the message channel before the response can be sent. Fix: add <code>return true;</code> at the end.';
+    feedback.className = 'bug-feedback show success';
+  } else {
+    el.classList.add('incorrect');
+    feedback.innerHTML = 'Not this line — look for where the async timing might cause problems...';
+    feedback.className = 'bug-feedback show error';
+    setTimeout(() => { el.classList.remove('incorrect'); feedback.className = 'bug-feedback'; }, 2000);
+  }
+};
+```
 
 ---
 
@@ -452,9 +520,7 @@ Same HTML/CSS/JS pattern as Multiple-Choice Quizzes, but with longer scenario de
 
 ```html
 <div class="callout callout-accent">
-  <span class="callout-icon" aria-hidden="true">
-    <svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M8.5 15.5A7 7 0 1 1 15.5 15.5c-.9.7-1.3 1.4-1.5 2.5h-4c-.2-1.1-.6-1.8-1.5-2.5Z"/></svg>
-  </span>
+  <div class="callout-icon">💡</div>
   <div class="callout-content">
     <strong class="callout-title">Key Insight</strong>
     <p>This pattern — splitting responsibilities into focused roles — is one of the most important ideas in software engineering. Engineers call it "separation of concerns."</p>
@@ -475,10 +541,8 @@ Grid of cards highlighting engineering patterns, tech stack components, or key c
 
 ```html
 <div class="pattern-cards">
-  <div class="pattern-card">
-    <span class="pattern-icon" style="background: var(--color-actor-1)" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6.2 9A7 7 0 0 1 18 7l2 5M18 15a7 7 0 0 1-12 2l-2-5"/></svg>
-    </span>
+  <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+    <div class="pattern-icon" style="background: var(--color-actor-1)">🔄</div>
     <h4 class="pattern-title">Caching</h4>
     <p class="pattern-desc">Store results to avoid redundant work — like keeping leftovers instead of cooking a new meal every time.</p>
   </div>
@@ -508,8 +572,6 @@ Grid of cards highlighting engineering patterns, tech stack components, or key c
 ---
 
 ## Flow Diagrams
-
-A static, non-interactive sequence. It shares the `.flow-step` class name with the [Message Flow](#message-flow--data-flow-animation) walkthrough but is a different pattern with no wiring: use it inside `.flow-steps`, and never inside a `.flow-animation` container.
 
 **Horizontal flow (desktop):**
 ```html
@@ -578,7 +640,7 @@ The most important accessibility feature for non-technical learners. Any technic
 **HTML — mark up terms inline:**
 ```html
 <p>The extension uses a
-  <button class="term" type="button">service worker<span class="term-definition" hidden>A service worker is a background script that runs independently of the web page.</span></button>
+  <span class="term" data-definition="A service worker is a background script that runs independently of the web page — like a behind-the-scenes assistant that's always on, even when you're not looking at the page.">service worker</span>
   to handle API calls.
 </p>
 ```
@@ -586,14 +648,9 @@ The most important accessibility feature for non-technical learners. Any technic
 **CSS:**
 ```css
 .term {
-  display: inline;
-  padding: 0;
-  border: 0;
   border-bottom: 1.5px dashed var(--color-accent-muted);
-  background: transparent;
-  color: inherit;
-  font: inherit;
   cursor: pointer;    /* NOT cursor: help — pointer feels clickable and inviting */
+  position: relative;
 }
 .term:hover, .term.active {
   border-bottom-color: var(--color-accent);
@@ -646,10 +703,88 @@ The most important accessibility feature for non-technical learners. Any technic
 }
 ```
 
-**JavaScript:** none to write. `main.js` creates each tooltip element from the hidden `.term-definition` text node, appends it to `document.body` so no ancestor can clip it, positions and flips it against the viewport, and wires hover, click, focus, Enter/Space, Escape, and outside-click dismissal. Do not add tooltip scripts to a module; the builder rejects them.
+**JS — position: fixed tooltips appended to body (never clipped by overflow):**
+```javascript
+// Tooltip container — appended to body so it's never clipped
+let activeTooltip = null;
+
+function positionTooltip(term, tip) {
+  const rect = term.getBoundingClientRect();
+  const tipWidth = 300; // approximate
+  let left = rect.left + rect.width / 2 - tipWidth / 2;
+  // Clamp to viewport
+  left = Math.max(8, Math.min(left, window.innerWidth - tipWidth - 8));
+
+  // Try above first
+  let top = rect.top - 8;
+  tip.style.left = left + 'px';
+
+  // Position above by default, flip below if no room
+  document.body.appendChild(tip);
+  const tipHeight = tip.offsetHeight;
+  if (rect.top - tipHeight - 8 < 0) {
+    // Flip below
+    tip.style.top = (rect.bottom + 8) + 'px';
+    tip.classList.add('flip');
+  } else {
+    tip.style.top = (rect.top - tipHeight - 8) + 'px';
+    tip.classList.remove('flip');
+  }
+}
+
+document.querySelectorAll('.term').forEach(term => {
+  const tip = document.createElement('span');
+  tip.className = 'term-tooltip';
+  tip.textContent = term.dataset.definition;
+
+  // Hover for desktop
+  term.addEventListener('mouseenter', () => {
+    if (activeTooltip && activeTooltip !== tip) {
+      activeTooltip.classList.remove('visible');
+      activeTooltip.remove();
+    }
+    positionTooltip(term, tip);
+    requestAnimationFrame(() => tip.classList.add('visible'));
+    activeTooltip = tip;
+  });
+
+  term.addEventListener('mouseleave', () => {
+    tip.classList.remove('visible');
+    setTimeout(() => { if (!tip.classList.contains('visible')) tip.remove(); }, 150);
+    activeTooltip = null;
+  });
+
+  // Tap for mobile
+  term.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeTooltip && activeTooltip !== tip) {
+      activeTooltip.classList.remove('visible');
+      activeTooltip.remove();
+    }
+    if (tip.classList.contains('visible')) {
+      tip.classList.remove('visible');
+      tip.remove();
+      activeTooltip = null;
+    } else {
+      positionTooltip(term, tip);
+      requestAnimationFrame(() => tip.classList.add('visible'));
+      activeTooltip = tip;
+    }
+  });
+});
+
+// Close tooltips when clicking elsewhere
+document.addEventListener('click', () => {
+  if (activeTooltip) {
+    activeTooltip.classList.remove('visible');
+    activeTooltip.remove();
+    activeTooltip = null;
+  }
+});
+```
 
 **Rules:**
-- Mark up a term on its first meaningful use in a module, calibrated to the learner: repository vocabulary and domain terms always, general programming terms only when the learner assumptions warrant it (see “Tooltip overload” in `gotchas.md`)
+- Mark up EVERY technical term on first use in each module (API, DOM, callback, async, endpoint, middleware, etc.)
 - Keep definitions to 1-2 sentences max, in everyday language
 - Use a metaphor in the definition when it helps — e.g., "A **callback** is like leaving your phone number at a restaurant so they can call you when your table is ready"
 - Don't mark the same term twice within the same screen — only on first appearance per module
@@ -692,20 +827,12 @@ Use instead of paragraphs listing "this folder does X, that folder does Y." Much
 .file-tree { font-family: var(--font-mono); font-size: var(--text-sm); }
 .ft-folder, .ft-file {
   padding: var(--space-2) var(--space-3);
-  border-left: 1px solid var(--color-border-light);
+  border-left: 2px solid var(--color-border-light);
   margin-left: var(--space-4);
 }
 .ft-folder > .ft-name { color: var(--color-accent); font-weight: 600; }
-.ft-folder > .ft-name::before,
-.ft-file > .ft-name::before {
-  content: ''; display: inline-block; width: 10px; height: 10px;
-  margin-right: var(--space-2); vertical-align: 0;
-}
-.ft-folder > .ft-name::before {
-  border-radius: 2px; background: currentColor;
-  clip-path: polygon(0 18%, 36% 18%, 45% 0, 100% 0, 100% 100%, 0 100%);
-}
-.ft-file > .ft-name::before { border: 1px solid currentColor; border-radius: 1px; }
+.ft-folder > .ft-name::before { content: '📁 '; }
+.ft-file > .ft-name::before { content: '📄 '; }
 .ft-desc {
   color: var(--color-text-secondary);
   font-family: var(--font-body);
@@ -724,21 +851,21 @@ For listing components, features, or concepts visually. Replaces bullet-point pa
 ```html
 <div class="icon-rows">
   <div class="icon-row">
-    <div class="icon-circle" style="background: var(--color-actor-1)" aria-hidden="true">UI</div>
+    <div class="icon-circle" style="background: var(--color-actor-1)">🖥️</div>
     <div>
       <strong>Frontend (Next.js)</strong>
       <p>What the user sees and interacts with</p>
     </div>
   </div>
   <div class="icon-row">
-    <div class="icon-circle" style="background: var(--color-actor-2)" aria-hidden="true">API</div>
+    <div class="icon-circle" style="background: var(--color-actor-2)">⚡</div>
     <div>
       <strong>API Routes</strong>
       <p>Backend logic that runs on the server</p>
     </div>
   </div>
   <div class="icon-row">
-    <div class="icon-circle" style="background: var(--color-actor-3)" aria-hidden="true">DB</div>
+    <div class="icon-circle" style="background: var(--color-actor-3)">🗄️</div>
     <div>
       <strong>Database (Supabase)</strong>
       <p>Where all the data is stored permanently</p>
@@ -760,8 +887,7 @@ For listing components, features, or concepts visually. Replaces bullet-point pa
 .icon-circle {
   width: 48px; height: 48px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: var(--color-on-accent); font-family: var(--font-mono);
-  font-size: var(--text-xs); font-weight: 700; flex-shrink: 0;
+  font-size: 1.25rem; flex-shrink: 0;
 }
 ```
 
@@ -804,7 +930,7 @@ For sequences that would otherwise be a numbered paragraph list. Visual, scannab
   padding: var(--space-4) var(--space-5);
   background: var(--color-surface);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
   box-shadow: var(--shadow-sm);
 }
 .step-num {
@@ -817,31 +943,3 @@ For sequences that would otherwise be a numbered paragraph list. Visual, scannab
 }
 .step-body p { margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--text-sm); }
 ```
-
----
-
-## Instruction and Optional-Practice Wrappers
-
-Two wrappers apply to every interaction in this file regardless of type. Both are styled by `styles.css`; neither needs any JavaScript.
-
-**Instruction line.** Every interaction opens with one sentence telling the learner exactly what to do with it. Without it, learners look at an exercise and do not know it is theirs to operate.
-
-```html
-<p class="activity-instruction"><strong>Do this next:</strong> advance the trace to keep every transformation visible in order.</p>
-```
-
-**Optional practice.** Supporting or secondary practice belongs in a native disclosure so the primary path stays short. The summary must name the outcome, not just say "Optional".
-
-```html
-<details class="practice-extra">
-  <summary>Optional · Match each file to its job</summary>
-  <p class="activity-instruction"><strong>Do this next:</strong> select each file, place it beside the job it owns, then check both matches.</p>
-  <!-- one interaction from this file -->
-</details>
-```
-
-**Rules:**
-- One `activity-instruction` per interaction, immediately before it, phrased as an action
-- `Optional · ` prefix on every `practice-extra` summary, followed by the outcome the learner gets
-- A module's primary interaction is never hidden inside a disclosure
-- `<details>` is native: it works without JavaScript, with a keyboard, and with a screen reader

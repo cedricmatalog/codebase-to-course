@@ -1,9 +1,1 @@
-.impeccable/
 docs/superpowers/
-node_modules/
-test-results/
-playwright-report/
-blob-report/
-screenshots/
-*.tmp
-.DS_Store
